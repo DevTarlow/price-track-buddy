@@ -6,6 +6,8 @@ over time.
 
 Built by **Moss AI Studio** · uuid `price-track-buddy@mossaistudio.com`
 
+![Price Track Buddy panel showing a DeepSeek and an OpenRouter balance card](screenshot01.png)
+
 ![panel](https://img.shields.io/badge/GNOME-45%20–%2050-blue) — tested on
 GNOME 50 / gjs 1.88 (Ubuntu 24.x, Wayland).
 
@@ -30,6 +32,10 @@ GNOME 50 / gjs 1.88 (Ubuntu 24.x, Wayland).
 - Readings are persisted to a local ledger, so history and "spent today"
   survive restarts. History is capped (480 points per provider, older points
   are averaged down).
+
+The top-panel indicator carries the same live numbers:
+
+![Top-panel indicator menu with show/hide widget, refresh now, open settings, reset widget position, and per-provider balances](screenshot02.png)
 
 ![widget preview](https://img.shields.io/badge/status-fully%20local-green)
 
