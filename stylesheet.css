@@ -195,16 +195,25 @@
   padding-top: 2px;
 }
 
-/* ---- collapsed chip row ---- */
+/* ---- collapsed minimal-mode rows ---- */
 .ptb-chip {
-  padding: 4px 12px 12px 12px;
+  padding: 6px 12px 12px 12px;
+  spacing: 6px;
+}
+
+.ptb-chip-row {
   spacing: 8px;
 }
 
-.ptb-chip-label {
+.ptb-chip-balance {
   font-weight: 700;
-  font-size: 12px;
-  color: #e8eaf0;
+  font-size: 13px;
+  color: #f2f4f8;
+}
+
+.ptb-chip-today {
+  font-size: 10.5px;
+  color: #9aa1ad;
 }
 /* ---- top panel indicator label ---- */
 .ptb-indicator {

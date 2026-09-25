@@ -18,7 +18,9 @@ GNOME 50 / gjs 1.88 (Ubuntu 24.x, Wayland).
 ## What it does
 
 - A draggable, collapsible glass panel floats over your desktop (default:
-  bottom-right) showing a card per provider:
+  bottom-right). Collapsing it (the chevron) keeps it on screen in a minimal
+  mode: one compact row per provider with its `DS`/`OR` tag, current balance
+  and today's spend. Expanded, it shows a card per provider:
 
   | DeepSeek card | OpenRouter card |
   |---|---|
