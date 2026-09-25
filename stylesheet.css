@@ -1,0 +1,213 @@
+/* Price Track Buddy — floating panel styles.
+ * Self-contained dark "glass" palette so the panel reads the same on light and
+ * dark desktops. St only supports a practical subset of CSS; keep to basics. */
+
+.ptb-root {
+  font-size: 12px;
+  background-color: rgba(18, 20, 26, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+  color: #e8eaf0;
+  min-width: 340px;
+}
+
+.ptb-root:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* ---- header ---- */
+.ptb-header {
+  padding: 7px 10px 4px 12px;
+  spacing: 8px;
+  border-radius: 14px 14px 0 0;
+}
+
+.ptb-header:hover {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.ptb-title {
+  font-weight: 700;
+  font-size: 12px;
+  color: #e8eaf0;
+}
+
+.ptb-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #5b6170;
+}
+
+.ptb-dot-ok {
+  background-color: #33d17a;
+}
+
+.ptb-dot-err {
+  background-color: #ff5f56;
+}
+
+.ptb-icon-btn {
+  background-color: transparent;
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.ptb-icon-btn:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.ptb-icon-btn:active {
+  background-color: rgba(255, 255, 255, 0.16);
+}
+
+.ptb-icon-btn > StIcon {
+  color: #c6cad4;
+}
+
+/* ---- body / cards ---- */
+.ptb-body {
+  padding: 4px 10px 12px 10px;
+  spacing: 16px;
+}
+
+.ptb-card {
+  background-color: rgba(255, 255, 255, 0.045);
+  border-radius: 12px;
+  padding: 10px 12px;
+  spacing: 4px;
+}
+
+.ptb-card-head {
+  spacing: 8px;
+}
+
+.ptb-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #0b0d12;
+  min-width: 24px;
+  padding: 2px 7px;
+  border-radius: 9px;
+  text-align: center;
+}
+
+.ptb-badge-ds {
+  background-color: #4d9fff;
+}
+
+.ptb-badge-or {
+  background-color: #ff8a3d;
+}
+
+.ptb-card-name {
+  font-weight: 700;
+  font-size: 12px;
+  color: #e8eaf0;
+}
+
+.ptb-card-status {
+  font-size: 10px;
+  color: #9aa1ad;
+}
+
+.ptb-balance-row {
+  spacing: 8px;
+  padding-top: 2px;
+}
+
+.ptb-balance {
+  font-size: 21px;
+  font-weight: 700;
+  color: #f2f4f8;
+}
+
+.ptb-delta {
+  font-size: 11px;
+  color: #9aa1ad;
+}
+
+.ptb-sub {
+  font-size: 11px;
+  color: #9aa1ad;
+}
+
+.ptb-stats {
+  spacing: 6px;
+  padding-top: 4px;
+}
+
+.ptb-stat {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 5px 0 5px 0;
+  spacing: 2px;
+  width: 100px;
+}
+
+.ptb-stat-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e8eaf0;
+  text-align: center;
+}
+
+.ptb-stat-label {
+  font-size: 9px;
+  color: #8b93a1;
+  text-align: center;
+  text-shadow: none;
+}
+
+.ptb-spark {
+  margin-top: 4px;
+}
+
+.ptb-meta {
+  font-size: 10px;
+  color: #8b93a1;
+  padding-top: 2px;
+}
+
+.ptb-peak {
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 3px 8px;
+  text-align: center;
+}
+
+.ptb-peak-peak {
+  background-color: rgba(255, 145, 64, 0.18);
+  color: #ffb37d;
+}
+
+.ptb-peak-off {
+  background-color: rgba(51, 209, 122, 0.16);
+  color: #7fe0aa;
+}
+
+.ptb-error {
+  font-size: 10.5px;
+  color: #ff7b72;
+  padding-top: 2px;
+}
+
+/* ---- collapsed chip row ---- */
+.ptb-chip {
+  padding: 4px 12px 12px 12px;
+  spacing: 8px;
+}
+
+.ptb-chip-label {
+  font-weight: 700;
+  font-size: 12px;
+  color: #e8eaf0;
+}
+/* ---- top panel indicator label ---- */
+.ptb-indicator {
+  font-weight: 700;
+  padding: 0 4px;
+}

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gnome-shell-extensions">
+  <schema id="org.gnome.shell.extensions.price-track-buddy"
+          path="/org/gnome/shell/extensions/price-track-buddy/">
+
+    <key name="deepseek-api-key" type="s">
+      <default>''</default>
+      <summary>DeepSeek API key</summary>
+      <description>Bearer token for the DeepSeek balance endpoint. Stored as plaintext in dconf — the same trade-off as any GNOME extension storing credentials.</description>
+    </key>
+    <key name="deepseek-enabled" type="b">
+      <default>true</default>
+      <summary>Track DeepSeek</summary>
+      <description>Whether Price Track Buddy polls the DeepSeek account.</description>
+    </key>
+    <key name="deepseek-base-url" type="s">
+      <default>''</default>
+      <summary>DeepSeek API base URL</summary>
+      <description>Leave empty for https://api.deepseek.com</description>
+    </key>
+    <key name="deepseek-currency" type="s">
+      <default>''</default>
+      <summary>Preferred DeepSeek balance currency</summary>
+      <description>ISO 4217 code such as CNY or USD. Empty uses the first balance entry the API returns.</description>
+    </key>
+
+    <key name="openrouter-api-key" type="s">
+      <default>''</default>
+      <summary>OpenRouter API key</summary>
+      <description>Bearer token for the OpenRouter credits endpoint. A management key is required. Stored as plaintext in dconf.</description>
+    </key>
+    <key name="openrouter-enabled" type="b">
+      <default>true</default>
+      <summary>Track OpenRouter</summary>
+      <description>Whether Price Track Buddy polls the OpenRouter account.</description>
+    </key>
+    <key name="openrouter-base-url" type="s">
+      <default>''</default>
+      <summary>OpenRouter API base URL</summary>
+      <description>Leave empty for https://openrouter.ai/api/v1</description>
+    </key>
+
+    <key name="refresh-interval" type="i">
+      <default>60</default>
+      <range min="20" max="3600"/>
+      <summary>Refresh interval in seconds</summary>
+      <description>How often the panel re-reads both provider balances.</description>
+    </key>
+
+    <key name="visible" type="b">
+      <default>true</default>
+      <summary>Show the floating widget</summary>
+      <description>Master switch for the floating panel. Use the top-bar indicator to bring it back after closing.</description>
+    </key>
+    <key name="collapsed" type="b">
+      <default>false</default>
+      <summary>Collapse the widget to a compact chip</summary>
+    </key>
+    <key name="show-indicator" type="b">
+      <default>true</default>
+      <summary>Show the top panel indicator</summary>
+      <description>Adds a small indicator with a menu (show/hide widget, refresh, settings).</description>
+    </key>
+    <key name="position-x" type="i">
+      <default>-1</default>
+      <summary>Widget X position</summary>
+      <description>-1 anchors the widget to the bottom-right edge of the primary monitor.</description>
+    </key>
+    <key name="position-y" type="i">
+      <default>-1</default>
+      <summary>Widget Y position</summary>
+      <description>-1 anchors the widget to the bottom-right edge of the primary monitor.</description>
+    </key>
+  </schema>
+</schemalist>

@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "type": "module",
+  "description": "Helper manifest so `node --check` parses these sources as ES modules. Not used by the extension at runtime."
+}

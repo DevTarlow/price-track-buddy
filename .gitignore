@@ -1,0 +1,10 @@
+# Editor / OS cruft — never part of the extension.
+*~
+*.swp
+.DS_Store
+.vscode/
+.idea/
+
+# A real API key must never land in the tree. Keys live in dconf.
+.env
+.env.*

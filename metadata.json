@@ -1,0 +1,15 @@
+{
+  "uuid": "price-track-buddy@mossaistudio.com",
+  "name": "Price Track Buddy",
+  "description": "Floating desktop panel that tracks DeepSeek and OpenRouter balances and usage over time. Plug in your API keys in Settings.",
+  "settings-schema": "org.gnome.shell.extensions.price-track-buddy",
+  "shell-version": [
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50"
+  ],
+  "url": ""
+}
