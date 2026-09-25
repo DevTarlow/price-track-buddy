@@ -108,6 +108,36 @@ If a push is explicitly requested, include a directly related fix-up from that
 same task in that push rather than stranding it as a surprise extra commit, and
 say plainly what was added.
 
+## Handling secrets during investigation
+
+The API keys live in dconf, not in a keyring the agent can query safely.
+Reading them is easy; keeping them out of the transcript is the part that goes
+wrong, and it has gone wrong here already.
+
+- **Never print a secret value, not even to confirm it exists.** Report
+  presence by length or a boolean — `gsettings get … deepseek-api-key | wc -c`
+  — never by echoing the value.
+- **Do not redact by post-processing captured output.** Capturing a command
+  with `2>&1` and then pattern-matching the result is the exact failure mode
+  this section exists for: GNOME's `dconf-CRITICAL … Read-only file system`
+  warnings mix into the captured string, the parse branch is skipped, and the
+  raw key is printed. Doing that during this repo's first session leaked two
+  live keys. If a value must be captured, capture stdout alone (`2>/dev/null`)
+  and mask before any branch — or, better, never capture it.
+- **On exposure, stop and say so.** If a secret reaches the transcript, name
+  the credential immediately and tell Tarlow to rotate it. Do not continue
+  silently and hope it was missed.
+- A key that has been in a transcript is spent. Rotate first, ask questions
+  after.
+- Re-entering a rotated key goes through the extension's prefs window, not
+  `gsettings set`, which would put the plaintext into shell history.
+
+For reference, the credentials are at dconf path
+`/org/gnome/shell/extensions/price-track-buddy/` (`deepseek-api-key`,
+`openrouter-api-key`), stored plaintext in `~/.config/dconf/user`.
+`~/.local/share/price-track-buddy/*.json` is the spend ledger and holds no
+credentials.
+
 ## Repo facts worth not rediscovering
 
 - **gjs, not Node.** Runtime code runs in GNOME Shell. No `fetch`, no npm
