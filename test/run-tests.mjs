@@ -16,6 +16,7 @@ import {
     nextTransition,
     peakStatus,
     localTimeZone,
+    formatLocal,
 } from '../lib/peak.js';
 import {
     fmtMoney,
@@ -86,6 +87,10 @@ check('peakStatus next is peak after weekend',
     psOff.nextIsPeak === true && psOff.nextChangeAt > SAT);
 check('peakStatus local render', typeof psOff.nextChangeLocal === 'string' &&
     psOff.nextChangeLocal.length > 0);
+check('formatLocal renders 12-hour', formatLocal(Date.UTC(2024, 0, 8, 15, 0), 'UTC') === 'Mon 3:00 PM');
+check('formatLocal noon is 12 PM', formatLocal(Date.UTC(2024, 0, 8, 12, 0), 'UTC') === 'Mon 12:00 PM');
+check('formatLocal midnight is 12 AM', formatLocal(Date.UTC(2024, 0, 8, 0, 0), 'UTC') === 'Mon 12:00 AM');
+check('peakStatus local render is 12-hour', /(AM|PM)$/.test(psOff.nextChangeLocal));
 check('localTimeZone returns a sane zone',
     typeof localTimeZone() === 'string' && localTimeZone().includes('/'));
 
@@ -101,7 +106,10 @@ check('fmtSigned zero empty', fmtSigned(0) === '');
 check('fmtDuration hours', fmtDuration(3661000) === '1h 01m');
 check('fmtDuration minutes', fmtDuration(65000) === '1m 05s');
 check('fmtDuration seconds', fmtDuration(3000) === '3s');
-check('fmtClock', fmtClock(new Date(2024, 0, 8, 9, 5)) === '09:05');
+check('fmtClock morning', fmtClock(new Date(2024, 0, 8, 9, 5)) === '9:05 AM');
+check('fmtClock evening', fmtClock(new Date(2024, 0, 8, 22, 4)) === '10:04 PM');
+check('fmtClock noon is 12 PM', fmtClock(new Date(2024, 0, 8, 12, 0)) === '12:00 PM');
+check('fmtClock midnight is 12 AM', fmtClock(new Date(2024, 0, 8, 0, 0)) === '12:00 AM');
 check('localDayKey', localDayKey(new Date(2024, 0, 5, 23, 59)) === '2024-01-05');
 check('errorText unauthorized mentions 401', errorText('unauthorized').includes('401'));
 check('errorText no-key', errorText('no-key').includes('key'));
