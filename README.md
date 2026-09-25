@@ -1,5 +1,7 @@
 # Price Track Buddy
 
+> 🚧 **UNDER DEVELOPMENT** — This extension is a work in progress. Its features may change and it may have unforeseen bugs. Use at your own risk; report issues as you find them.
+
 A floating GNOME Shell panel that keeps live price/balance updates for your
 **DeepSeek** and **OpenRouter** API accounts and remembers how much you spend
 over time.
