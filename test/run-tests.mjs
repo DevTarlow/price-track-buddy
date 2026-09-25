@@ -91,8 +91,9 @@ check('formatLocal renders 12-hour', formatLocal(Date.UTC(2024, 0, 8, 15, 0), 'U
 check('formatLocal noon is 12 PM', formatLocal(Date.UTC(2024, 0, 8, 12, 0), 'UTC') === 'Mon 12:00 PM');
 check('formatLocal midnight is 12 AM', formatLocal(Date.UTC(2024, 0, 8, 0, 0), 'UTC') === 'Mon 12:00 AM');
 check('peakStatus local render is 12-hour', /(AM|PM)$/.test(psOff.nextChangeLocal));
+// A zone need not contain '/': Intl can legitimately report 'UTC' or 'GMT'.
 check('localTimeZone returns a sane zone',
-    typeof localTimeZone() === 'string' && localTimeZone().includes('/'));
+    typeof localTimeZone() === 'string' && localTimeZone().length > 0);
 
 /* ---------------------------------------------------------------- formatting */
 
