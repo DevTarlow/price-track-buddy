@@ -64,6 +64,29 @@ Then activate it:
 On Wayland, Shell extension enable/disable applies after you log out and back
 in (or `Alt+F2` → `r` on X11).
 
+## Update
+
+Pull the latest source and re-run the installer. `install.sh` is also the
+update step: it copies the current `extension.js`, `prefs.js`,
+`stylesheet.css`, `lib/*.js` and the schema into
+`~/.local/share/gnome-shell/extensions/`, and recompiles
+`gschemas.compiled` (needed whenever a release adds or changes a setting).
+
+```bash
+cd price-track-buddy@mossaistudio.com
+git pull
+./install.sh
+```
+
+Then load the new code the same way as a fresh install:
+
+- **Wayland** — log out and back in.
+- **X11** — `Alt+F2` → `r`.
+
+Your settings and history are kept: settings live in dconf
+(`/org/gnome/shell/extensions/price-track-buddy/`) and the spend ledger in
+`~/.local/share/price-track-buddy/`, neither of which `install.sh` touches.
+
 ## Configuration
 
 Open **Extensions** → **Price Track Buddy** ⚙ (or use the widget's gear icon /
