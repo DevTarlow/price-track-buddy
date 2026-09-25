@@ -110,7 +110,7 @@ export default class PriceTrackBuddyExtension extends Extension {
             'openrouter-api-key', 'openrouter-enabled', 'openrouter-base-url',
         ]) {
             this._signalIds.push(this._settings.connect(`changed::${key}`,
-                () => this._onProviderSettingsChanged()));
+                () => this._onProviderSettingsChanged(key)));
         }
 
         // Timers. GLib 2.88 annotates these as (priority, interval, callback).
@@ -166,8 +166,18 @@ export default class PriceTrackBuddyExtension extends Extension {
         };
     }
 
-    _onProviderSettingsChanged() {
+    _onProviderSettingsChanged(key) {
         this._buildProviders();
+        // The reading belongs to the previous key/config. Drop it so the card
+        // shows a loading state instead of stale data until the new fetch
+        // lands. (If a refresh is already running, _refreshNow() returns early
+        // and that fetch's results still apply — a separate, pre-existing
+        // overlap we leave alone.)
+        const st = this._state?.[key];
+        if (st) {
+            st.reading = null;
+            st.loading = true;
+        }
         this._refreshNow();
     }
 
