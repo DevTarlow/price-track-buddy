@@ -18,9 +18,11 @@ GNOME 50 / gjs 1.88 (Ubuntu 24.x, Wayland).
 ## What it does
 
 - A draggable, collapsible glass panel floats over your desktop (default:
-  bottom-right). Collapsing it (the chevron) keeps it on screen in a minimal
-  mode: one compact row per provider with its `DS`/`OR` tag, current balance
-  and today's spend. Expanded, it shows a card per provider:
+  bottom-right). Its header carries the panel's own controls — refresh now,
+  collapse/expand, open settings and hide — and the title area is the drag
+  handle. Collapsing it (the chevron) keeps it on screen in a minimal mode: one
+  compact row per provider with its `DS`/`OR` tag, current balance and today's
+  spend. Expanded, it shows a card per provider:
 
   | DeepSeek card | OpenRouter card |
   |---|---|
@@ -30,6 +32,9 @@ GNOME 50 / gjs 1.88 (Ubuntu 24.x, Wayland).
   | 30-minute mini sparkline of the balance | Sparkline of credits |
   | **Peak / off-peak billing banner** (Beijing-hours windows, live countdown) | — |
 
+- The panel's look is configurable: an **opacity** slider (20–100 %) sets how
+  translucent it is, and **Always on top** keeps it visible over fullscreen
+  windows — switch it off and a fullscreen window on the same monitor covers it.
 - A small `$` indicator in the top panel (toggleable) with a menu:
   show/hide the widget, refresh now, open settings, reset widget position, and
   live per-provider one-line balances.
