@@ -61,6 +61,17 @@
       <summary>Show the top panel indicator</summary>
       <description>Adds a small indicator with a menu (show/hide widget, refresh, settings).</description>
     </key>
+    <key name="opacity" type="d">
+      <default>1.0</default>
+      <range min="0.2" max="1.0"/>
+      <summary>Floating widget opacity</summary>
+      <description>Overall opacity of the floating panel, from 20% (very translucent) to 100% (opaque).</description>
+    </key>
+    <key name="always-on-top" type="b">
+      <default>true</default>
+      <summary>Keep the widget above fullscreen windows</summary>
+      <description>When enabled the floating panel stays visible on top of fullscreen applications. When disabled, a fullscreen window on the same monitor covers it.</description>
+    </key>
     <key name="position-x" type="i">
       <default>-1</default>
       <summary>Widget X position</summary>

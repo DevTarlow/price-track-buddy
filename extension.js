@@ -49,6 +49,7 @@ export default class PriceTrackBuddyExtension extends Extension {
         this._refreshId = 0;
         this._tickId = 0;
         this._signalIds = [];
+        this._fullscreenId = 0;
 
         // Floating panel.
         this._widget = new FloatingPanel({
@@ -61,17 +62,27 @@ export default class PriceTrackBuddyExtension extends Extension {
                 onDragEnd: (x, y) => {
                     this._settings.set_int('position-x', Math.round(x));
                     this._settings.set_int('position-y', Math.round(y));
+                    // The panel may have moved onto another monitor; that
+                    // monitor's fullscreen state decides its visibility.
+                    this._applyVisibility();
                 },
             },
         });
-        Main.layoutManager.uiGroup.add_child(this._widget.actor);
+        // Tracked chrome rather than a raw uiGroup child: it stays above the
+        // window group and its input region is kept in sync. Visibility over
+        // fullscreen is handled by _applyVisibility() below.
+        Main.layoutManager.addChrome(this._widget.actor, {
+            affectsStruts: false,
+            trackFullscreen: false,
+        });
         this._widget.actor.set_position(
             this._settings.get_int('position-x'),
             this._settings.get_int('position-y'));
         if (this._settings.get_int('position-x') < 0 || this._settings.get_int('position-y') < 0)
             this._placeDefault();
         this._widget.setCollapsed(this._settings.get_boolean('collapsed'));
-        this._widget.actor.visible = this._settings.get_boolean('visible');
+        this._applyOpacity();
+        this._applyVisibility();
 
         // Top panel indicator (control surface for the floating widget).
         this._indicator = null;
@@ -98,13 +109,20 @@ export default class PriceTrackBuddyExtension extends Extension {
             'changed::collapsed',
             () => this._widget.setCollapsed(this._settings.get_boolean('collapsed'))));
         this._signalIds.push(this._settings.connect(
-            'changed::visible',
-            () => { this._widget.actor.visible = this._settings.get_boolean('visible'); }));
+            'changed::visible', () => this._applyVisibility()));
+        this._signalIds.push(this._settings.connect(
+            'changed::always-on-top', () => this._applyVisibility()));
+        this._signalIds.push(this._settings.connect(
+            'changed::opacity', () => this._applyOpacity()));
         this._signalIds.push(this._settings.connect(
             'changed::position-x',
             () => { if (this._settings.get_int('position-x') < 0) this._placeDefault(); }));
         this._signalIds.push(this._settings.connect(
             'changed::show-indicator', () => this._rebuildIndicator()));
+        // "Always on top" off means a fullscreen window on the panel's monitor
+        // covers it, so a fullscreen change can alter its visibility.
+        this._fullscreenId = global.display.connect(
+            'in-fullscreen-changed', () => this._applyVisibility());
         for (const key of [
             'deepseek-api-key', 'deepseek-enabled', 'deepseek-base-url', 'deepseek-currency',
             'openrouter-api-key', 'openrouter-enabled', 'openrouter-base-url',
@@ -140,6 +158,10 @@ export default class PriceTrackBuddyExtension extends Extension {
         for (const id of this._signalIds)
             this._settings.disconnect(id);
         this._signalIds = [];
+        if (this._fullscreenId) {
+            global.display.disconnect(this._fullscreenId);
+            this._fullscreenId = 0;
+        }
 
         this._widget?.destroy();
         this._widget = null;
@@ -329,6 +351,31 @@ export default class PriceTrackBuddyExtension extends Extension {
 
     _setVisible(visible) {
         this._settings.set_boolean('visible', visible);
+        this._applyVisibility();
+    }
+
+    _applyOpacity() {
+        if (!this._widget)
+            return;
+        const opacity = Math.min(1, Math.max(0.2, this._settings.get_double('opacity')));
+        this._widget.actor.opacity = Math.round(opacity * 255);
+    }
+
+    /**
+     * Master visibility is the `visible` setting. With "always on top" off, a
+     * fullscreen window on the widget's monitor also hides it; with it on the
+     * widget stays visible over fullscreen. We own the actor's `visible` flag
+     * (the chrome is tracked with trackFullscreen:false) so the hide button is
+     * never undone by the layout manager.
+     */
+    _applyVisibility() {
+        if (!this._widget)
+            return;
+        let visible = this._settings.get_boolean('visible');
+        if (visible && !this._settings.get_boolean('always-on-top')) {
+            const monitor = Main.layoutManager.findMonitorForActor(this._widget.actor);
+            visible = !(monitor?.inFullscreen ?? false);
+        }
         this._widget.actor.visible = visible;
     }
 

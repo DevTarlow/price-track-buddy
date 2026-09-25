@@ -92,6 +92,8 @@ indicator menu). Two pages:
 |---|---|
 | Refresh interval | 20–3600 s (default 60 s) |
 | Show floating widget | Hides the panel (indicator still works) |
+| Always on top | Keep the widget visible over fullscreen windows (off = a fullscreen window on its monitor covers it) |
+| Widget opacity | 20–100 % panel opacity |
 | Show top panel indicator | Hides the `$` indicator |
 | Widget position | Reset to the bottom-right corner (drag to move) |
 

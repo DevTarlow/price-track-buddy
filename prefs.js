@@ -129,6 +129,37 @@ export default class PriceTrackBuddyPreferences extends ExtensionPreferences {
         settings.bind('visible', visibleSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
         widgetGroup.add(visibleSwitch);
 
+        const onTopSwitch = new Adw.SwitchRow({
+            title: 'Always on top',
+            subtitle: 'Keep the widget visible above fullscreen windows.',
+        });
+        settings.bind('always-on-top', onTopSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
+        widgetGroup.add(onTopSwitch);
+
+        const opacityRow = new Adw.ActionRow({
+            title: 'Widget opacity',
+            subtitle: 'How translucent the floating panel is.',
+        });
+        const opacityScale = new Gtk.Scale({
+            orientation: Gtk.Orientation.HORIZONTAL,
+            adjustment: new Gtk.Adjustment({
+                lower: 0.2,
+                upper: 1.0,
+                step_increment: 0.05,
+                page_increment: 0.1,
+            }),
+            draw_value: true,
+            value_pos: Gtk.PositionType.RIGHT,
+            hexpand: true,
+            width_request: 180,
+            valign: Gtk.Align.CENTER,
+        });
+        opacityScale.add_mark(0.2, Gtk.PositionType.BOTTOM, null);
+        opacityScale.add_mark(1.0, Gtk.PositionType.BOTTOM, null);
+        settings.bind('opacity', opacityScale.adjustment, 'value', Gio.SettingsBindFlags.DEFAULT);
+        opacityRow.add_suffix(opacityScale);
+        widgetGroup.add(opacityRow);
+
         const indicatorSwitch = new Adw.SwitchRow({ title: 'Show top panel indicator' });
         settings.bind('show-indicator', indicatorSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
         widgetGroup.add(indicatorSwitch);
