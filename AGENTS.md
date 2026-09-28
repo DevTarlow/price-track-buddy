@@ -35,7 +35,7 @@ install for a change that only a unit test can reach.
 
 ```bash
 node --check extension.js prefs.js lib/*.js   # syntax; parses as ESM
-gjs -m test/run-tests.mjs                     # 50 unit/integration tests
+gjs -m test/run-tests.mjs                     # 57 unit/integration tests
 ```
 
 Reading the test result:
@@ -82,7 +82,7 @@ type(scope): summary
 What changed and why. Reference the concrete symptom when fixing a bug —
 e.g. Clutter.TextEllipsizeMode not introspected in this mutter.
 
-Verified: node --check extension.js prefs.js lib/*.js; gjs -m test/run-tests.mjs (50 passed)
+Verified: node --check extension.js prefs.js lib/*.js; gjs -m test/run-tests.mjs (57 passed)
 ```
 
 - Types in use: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`.

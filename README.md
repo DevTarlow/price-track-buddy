@@ -176,7 +176,7 @@ test/run-tests.mjs  gjs unit + integration tests:  gjs -m test/run-tests.mjs
 
 ```bash
 node --check extension.js prefs.js lib/*.js   # syntax
-gjs -m test/run-tests.mjs                     # 50 unit/integration tests
+gjs -m test/run-tests.mjs                     # 57 unit/integration tests
 ```
 
 ## Credits
