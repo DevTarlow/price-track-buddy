@@ -55,10 +55,20 @@ The top-panel indicator carries the same live numbers:
 
 ## Install
 
+Clone the repo and check out the latest tagged release:
+
 ```bash
-cd price-track-buddy@mossaistudio.com
-./install.sh          # → ~/.local/share/gnome-shell/extensions/
+git clone https://github.com/DevTarlow/price-track-buddy.git
+cd price-track-buddy
+git checkout v0.1.0          # the latest release tag
+./install.sh                 # → ~/.local/share/gnome-shell/extensions/
 ```
+
+A tag checkout leaves you on a detached HEAD, which is expected here — you are
+pinned to a released snapshot rather than to `main`. `git tag -l` lists the
+available tags, and the
+[releases page](https://github.com/DevTarlow/price-track-buddy/releases) says
+what changed in each one.
 
 Then activate it:
 
@@ -71,17 +81,23 @@ in (or `Alt+F2` → `r` on X11).
 
 ## Update
 
-Pull the latest source and re-run the installer. `install.sh` is also the
-update step: it copies the current `extension.js`, `prefs.js`,
-`stylesheet.css`, `lib/*.js` and the schema into
+Releases are tagged, so updating means moving to the new tag and re-running the
+installer. `install.sh` is also the update step: it copies the current
+`extension.js`, `prefs.js`, `stylesheet.css`, `lib/*.js` and the schema into
 `~/.local/share/gnome-shell/extensions/`, and recompiles
 `gschemas.compiled` (needed whenever a release adds or changes a setting).
 
 ```bash
-cd price-track-buddy@mossaistudio.com
-git pull
+cd price-track-buddy
+git fetch --tags         # pick up releases tagged since you cloned
+git tag -l               # list them, oldest first
+git checkout v0.1.0      # the release you are moving to
 ./install.sh
 ```
+
+Want the development tip instead of a release? `git checkout main && git pull`
+before `./install.sh` does the same thing — the tags are just the snapshots
+that were released.
 
 Then load the new code the same way as a fresh install:
 
