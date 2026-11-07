@@ -4,8 +4,8 @@
 > your own risk, and report issues as you find them.
 
 A floating panel I built for GNOME Shell 45 to 50. It keeps the balances and
-spend from DeepSeek, OpenRouter, a LiteLLM proxy, or your own endpoints on
-screen. And it remembers what you spend over time.
+spend from DeepSeek, OpenRouter, or your own endpoints on screen. And it
+remembers what you spend over time.
 
 Built by Moss AI Studio · uuid `price-track-buddy@mossaistudio.com`
 
@@ -60,8 +60,8 @@ The top-panel indicator carries the same live numbers.
 ## Requirements
 
 - GNOME Shell 45-50 (gjs 1.74 or newer; built against gjs 1.88)
-- Network access to `api.deepseek.com`, `openrouter.ai`, your LiteLLM proxy,
-  and/or whichever endpoints you point the custom slots at
+- Network access to `api.deepseek.com`, `openrouter.ai`, and/or whichever
+  gateway or custom endpoints you configure
 
 ## Install
 
@@ -134,9 +134,9 @@ provider off hides its card, dot and menu line; the ledger is kept.
 | Track OpenRouter | Enable/disable polling OpenRouter |
 | OpenRouter API key | Management key (`sk-or-v1-…`). A publishable key will get HTTP 401 |
 | OpenRouter base URL | Optional; default `https://openrouter.ai/api/v1` |
-| Track LiteLLM proxy | Enable/disable polling a LiteLLM proxy |
-| LiteLLM base URL | Proxy root; default `http://localhost:4000` |
-| LiteLLM API key | Virtual key with access to `/key/info` |
+| Track LiteLLM-compatible | Enable the `/key/info` reader (off by default) |
+| LiteLLM-compatible base URL | Proxy root; default `http://localhost:4000` |
+| LiteLLM-compatible API key | Virtual key with access to `/key/info` |
 | Track custom endpoints | Three slots, each with its own enable switch |
 | Custom endpoint name | Optional display name per slot (default "Custom endpoint N") |
 | Custom endpoint URL | Full URL returning the JSON contract below |
@@ -149,14 +149,15 @@ provider off hides its card, dot and menu line; the ledger is kept.
 > GSettings/dconf stores keys in plaintext on disk. Use a dedicated key, or a
 > restricted/proxy endpoint as Base URL, if that bothers you.
 
-### LiteLLM proxy
+### LiteLLM-compatible gateways
 
-Point it at a LiteLLM proxy root and give it a virtual key. It reads
-`/key/info` and shows the key's remaining budget when one is set, or the spend
-when it is not. Spend comes from the change between readings.
+This reads the `/key/info` shape that LiteLLM and some forks expose. It is
+optional and off by default, and it is not an endorsement of a particular
+proxy. Point Base URL at the proxy root and use a virtual key. It shows the
+key's remaining budget when one is set, or the spend when it is not.
 
-OneAPI and NewAPI expose a different response shape and a deployment-specific
-quota unit, so use the custom endpoint with a small proxy for those.
+If your gateway does not expose `/key/info`, use a custom slot with a small
+proxy. The gateway matrix below covers the common cases.
 
 ### Custom endpoints
 
@@ -191,6 +192,21 @@ endpoint's shape does not fit the contract, put a small proxy in front of it.
 | Show top panel indicator | Hides the `$` indicator |
 | Widget position | Reset to the bottom-right corner (drag to move) |
 
+## Gateways
+
+| Gateway | What it exposes | How it fits here |
+|---|---|---|
+| OpenRouter | Credits and usage | Built in, hosted. The simplest path. |
+| LiteLLM and forks | `/key/info` spend and budget | Built in and off by default. |
+| Bifrost | Prometheus cost metrics | No adapter; use a custom slot with a small proxy. |
+| New API / OneAPI | `/api/user/self` quota | No adapter; the quota unit is per deployment. Use a proxy. |
+| Portkey / Helicone / Cloudflare | Cost analytics | No simple balance; use a custom slot with a proxy. |
+| Anything else | Normalized JSON | Custom endpoint, up to three slots. |
+
+The custom slots are the general path. A proxy only has to return one of the
+two shapes in the Custom endpoints section; it can sit in front of any provider
+or gateway that reports spend.
+
 ## Where the data lives
 
 - **Settings**: `dconf` key
@@ -220,7 +236,7 @@ endpoint's shape does not fit the contract, put a small proxy in front of it.
 
 | Symptom | Fix |
 |---|---|
-| `API key rejected (401)` | Wrong key or URL. OpenRouter needs a *management* key; LiteLLM needs a virtual key. |
+| `API key rejected (401)` | Wrong key or URL. OpenRouter needs a *management* key; LiteLLM-compatible endpoints need a virtual key. |
 | `Not configured` / `No API key set` | Add the key in Settings. Polling is skipped until then. |
 | `Network error` | Machine offline. It will retry on the next interval. |
 | `malformed` on a custom endpoint | The URL must return JSON with a numeric `total`/`balance`, or `used`/`spent` for a spend-only endpoint. Use Test endpoint. |
