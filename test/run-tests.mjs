@@ -32,9 +32,10 @@ import {
     DeepSeekProvider,
     OpenRouterProvider,
     ProviderError,
-    deepseekMovement,
-    openrouterMovement,
+    movementFor,
+    parseAmount,
 } from '../lib/providers.js';
+import { PROVIDERS, providerById } from '../lib/registry.js';
 
 let pass = 0;
 let fail = 0;
@@ -129,9 +130,9 @@ GLib.mkdir_with_parents(TEST_DIR, 0o755);
     check('fresh ledger has no data', l.hasData() === false);
 
     l.record({ at: 1000, total: 100 });
-    const m = deepseekMovement({ total: 100 }, { total: 97.5 });
+    const m = movementFor('balance', { headline: 100 }, { headline: 97.5 });
     check('deepseek spend delta', near(m.spentDelta, 2.5) && m.toppedUpDelta === 0);
-    const up = deepseekMovement({ total: 97.5 }, { total: 102 });
+    const up = movementFor('balance', { headline: 97.5 }, { headline: 102 });
     check('deepseek top-up delta', near(up.toppedUpDelta, 4.5) && up.spentDelta === 0);
 
     l.record({ at: 2000, total: 97.5, spentDelta: m.spentDelta, toppedUpDelta: 0, extra: { granted: 10, toppedUp: 90 } });
@@ -154,11 +155,11 @@ GLib.mkdir_with_parents(TEST_DIR, 0o755);
 {
     // OpenRouter usage movement + series trimming.
     const l = new Ledger({ provider: 'openrouter', currency: 'USD', dir: TEST_DIR }).load();
-    const m = openrouterMovement(
+    const m = movementFor('usage',
         { usage: 10, purchased: 50 },
         { usage: 12.5, purchased: 50 });
     check('openrouter spend delta', near(m.spentDelta, 2.5) && m.toppedUpDelta === 0);
-    const up = openrouterMovement(
+    const up = movementFor('usage',
         { usage: 12.5, purchased: 50 },
         { usage: 12.5, purchased: 70 });
     check('openrouter top-up delta', near(up.toppedUpDelta, 20) && up.spentDelta === 0);
@@ -168,6 +169,28 @@ GLib.mkdir_with_parents(TEST_DIR, 0o755);
         l.record({ at: start + i * 1000, total: 100 - i * 0.01 });
     check('ledger trims past MAX_POINTS', l.points.length <= 480 && l.points.length > 240);
 }
+
+/* -------------------------------------------- provider helpers + registry */
+
+check('parseAmount numeric string', parseAmount('12.34') === 12.34);
+check('parseAmount number', parseAmount(7) === 7);
+check('parseAmount junk is NaN', Number.isNaN(parseAmount('nope')));
+
+check('registry ids are unique',
+    new Set(PROVIDERS.map((p) => p.id)).size === PROVIDERS.length);
+for (const provider of PROVIDERS) {
+    check(`registry ${provider.id} descriptor is complete`,
+        typeof provider.name === 'string' &&
+        typeof provider.badge === 'string' &&
+        typeof provider.accent === 'string' &&
+        typeof provider.create === 'function' &&
+        ['balance', 'usage'].includes(provider.movement) &&
+        !!provider.settings?.enabled && !!provider.settings?.apiKey);
+}
+check('providerById finds deepseek', providerById('deepseek')?.id === 'deepseek');
+check('providerById returns null for unknown', providerById('nope') === null);
+check('registry factories build readable adapters',
+    PROVIDERS.every((p) => typeof p.create({ apiKey: '' }).read === 'function'));
 
 /* --------------------------------------------------- provider error paths */
 
@@ -189,10 +212,10 @@ async function expectProviderError(name, promise, code) {
     }
 }
 
-await expectProviderError('DeepSeek no-key', new DeepSeekProvider({ apiKey: '' }).getBalance(), 'no-key');
-await expectProviderError('OpenRouter no-key', new OpenRouterProvider({ apiKey: '' }).getCredits(), 'no-key');
-await expectProviderError('DeepSeek bogus key', new DeepSeekProvider({ apiKey: 'sk-ptb-bogus-test' }).getBalance(), 'unauthorized');
-await expectProviderError('OpenRouter bogus key', new OpenRouterProvider({ apiKey: 'sk-or-v1-ptb-bogus-test' }).getCredits(), 'unauthorized');
+await expectProviderError('DeepSeek no-key', new DeepSeekProvider({ apiKey: '' }).read(), 'no-key');
+await expectProviderError('OpenRouter no-key', new OpenRouterProvider({ apiKey: '' }).read(), 'no-key');
+await expectProviderError('DeepSeek bogus key', new DeepSeekProvider({ apiKey: 'sk-ptb-bogus-test' }).read(), 'unauthorized');
+await expectProviderError('OpenRouter bogus key', new OpenRouterProvider({ apiKey: 'sk-or-v1-ptb-bogus-test' }).read(), 'unauthorized');
 
 /* ------------------------------------------------------------------ summary */
 

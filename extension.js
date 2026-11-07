@@ -1,10 +1,10 @@
 /**
- * Price Track Buddy — floating desktop panel tracking DeepSeek and OpenRouter
- * balances and usage over time.
+ * Price Track Buddy — floating desktop panel tracking provider balances and
+ * usage over time.
  *
  * Built by Moss AI Studio. Modeled on the DeepSeek Harness "balance-buddy"
  * plugin: spend is derived from balance deltas, daily buckets accumulate
- * spend/top-ups, and DeepSeek peak/off-peak billing windows are surfaced.
+ * spend/top-ups, and providers with billing windows surface peak/off-peak.
  */
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -15,35 +15,29 @@ import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import GLib from 'gi://GLib';
 import St from 'gi://St';
 
-import {
-    DeepSeekProvider,
-    OpenRouterProvider,
-    ProviderError,
-    deepseekMovement,
-    openrouterMovement,
-} from './lib/providers.js';
+import { ProviderError, movementFor } from './lib/providers.js';
+import { PROVIDERS, providerById } from './lib/registry.js';
 import { Ledger } from './lib/ledger.js';
 import { peakStatus, localTimeZone } from './lib/peak.js';
 import { FloatingPanel } from './lib/widget.js';
 import { fmtMoney } from './lib/format.js';
-
-const PROVIDER_KEYS = ['deepseek', 'openrouter'];
 
 export default class PriceTrackBuddyExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
         this._dir = `${GLib.get_user_data_dir()}/price-track-buddy`;
 
-        this._state = {
-            deepseek: { loading: false, error: null, reading: null },
-            openrouter: { loading: false, error: null, reading: null },
-        };
-        this._ledgers = {
-            deepseek: new Ledger({ provider: 'deepseek', dir: this._dir }).load(),
-            openrouter: new Ledger({ provider: 'openrouter', currency: 'USD', dir: this._dir }).load(),
-        };
+        this._state = {};
+        this._ledgers = {};
+        for (const provider of PROVIDERS) {
+            this._state[provider.id] = { loading: false, error: null, reading: null };
+            this._ledgers[provider.id] = new Ledger({
+                provider: provider.id,
+                currency: provider.ledgerCurrency ?? null,
+                dir: this._dir,
+            }).load();
+        }
         this._buildProviders();
-        this._readings = { deepseek: null, openrouter: null };
 
         this._refreshing = false;
         this._refreshId = 0;
@@ -53,6 +47,7 @@ export default class PriceTrackBuddyExtension extends Extension {
 
         // Floating panel.
         this._widget = new FloatingPanel({
+            providers: PROVIDERS,
             callbacks: {
                 onRefresh: () => this._refreshNow(),
                 onToggleCollapsed: () => this._settings.set_boolean(
@@ -86,8 +81,7 @@ export default class PriceTrackBuddyExtension extends Extension {
 
         // Top panel indicator (control surface for the floating widget).
         this._indicator = null;
-        this._indDS = null;
-        this._indOR = null;
+        this._indItems = {};
         // Keep a broken indicator from aborting enable(). The floating widget is
         // the primary UI, so it must still get its timers and first refresh.
         if (this._settings.get_boolean('show-indicator')) {
@@ -97,8 +91,7 @@ export default class PriceTrackBuddyExtension extends Extension {
                 logError(e, 'Price Track Buddy: could not build the panel indicator');
                 this._indicator?.destroy();
                 this._indicator = null;
-                this._indDS = null;
-                this._indOR = null;
+                this._indItems = {};
             }
         }
 
@@ -123,12 +116,13 @@ export default class PriceTrackBuddyExtension extends Extension {
         // covers it, so a fullscreen change can alter its visibility.
         this._fullscreenId = global.display.connect(
             'in-fullscreen-changed', () => this._applyVisibility());
-        for (const key of [
-            'deepseek-api-key', 'deepseek-enabled', 'deepseek-base-url', 'deepseek-currency',
-            'openrouter-api-key', 'openrouter-enabled', 'openrouter-base-url',
-        ]) {
-            this._signalIds.push(this._settings.connect(`changed::${key}`,
-                () => this._onProviderSettingsChanged(key)));
+        for (const provider of PROVIDERS) {
+            for (const key of Object.values(provider.settings)) {
+                if (!key)
+                    continue;
+                this._signalIds.push(this._settings.connect(`changed::${key}`,
+                    () => this._onProviderSettingsChanged(provider.id)));
+            }
         }
 
         // Timers. GLib 2.88 annotates these as (priority, interval, callback).
@@ -140,7 +134,7 @@ export default class PriceTrackBuddyExtension extends Extension {
             if (!this._widget) return GLib.SOURCE_CONTINUE;
             if (!this._widget.actor.visible) return GLib.SOURCE_CONTINUE;
             if (this._settings.get_boolean('collapsed'))
-                this._widget.updatePeak(peakStatus(Date.now(), localTimeZone()));
+                this._widget.updatePeaks(this._currentPeaks());
             else
                 this._render();
             return GLib.SOURCE_CONTINUE;
@@ -170,6 +164,7 @@ export default class PriceTrackBuddyExtension extends Extension {
         this._widget = null;
         this._indicator?.destroy();
         this._indicator = null;
+        this._indItems = {};
         this._providers = null;
         this._ledgers = null;
         this._state = null;
@@ -178,27 +173,29 @@ export default class PriceTrackBuddyExtension extends Extension {
     /* ------------------------------------------------------------ providers */
 
     _buildProviders() {
-        this._providers = {
-            deepseek: new DeepSeekProvider({
-                apiKey: this._settings.get_string('deepseek-api-key'),
-                baseUrl: this._settings.get_string('deepseek-base-url') || undefined,
-                preferredCurrency: this._settings.get_string('deepseek-currency'),
-            }),
-            openrouter: new OpenRouterProvider({
-                apiKey: this._settings.get_string('openrouter-api-key'),
-                baseUrl: this._settings.get_string('openrouter-base-url') || undefined,
-            }),
-        };
+        this._providers = {};
+        for (const provider of PROVIDERS) {
+            const s = provider.settings;
+            this._providers[provider.id] = provider.create({
+                apiKey: this._settings.get_string(s.apiKey),
+                baseUrl: s.baseUrl
+                    ? this._settings.get_string(s.baseUrl) || undefined
+                    : undefined,
+                preferredCurrency: s.currency
+                    ? this._settings.get_string(s.currency)
+                    : '',
+            });
+        }
     }
 
-    _onProviderSettingsChanged(key) {
+    _onProviderSettingsChanged(providerId) {
         this._buildProviders();
         // The reading belongs to the previous key/config. Drop it so the card
         // shows a loading state instead of stale data until the new fetch
         // lands. (If a refresh is already running, _refreshNow() returns early
         // and that fetch's results still apply — a separate, pre-existing
         // overlap we leave alone.)
-        const st = this._state?.[key];
+        const st = this._state?.[providerId];
         if (st) {
             st.reading = null;
             st.loading = true;
@@ -206,11 +203,12 @@ export default class PriceTrackBuddyExtension extends Extension {
         this._refreshNow();
     }
 
-    _cfg(key) {
+    _cfg(providerId) {
+        const s = providerById(providerId).settings;
         return {
-            enabled: this._settings.get_boolean(`${key}-enabled`),
-            keySet: !!this._settings.get_string(`${key}-api-key`),
-            provider: this._providers[key],
+            enabled: this._settings.get_boolean(s.enabled),
+            keySet: !!this._settings.get_string(s.apiKey),
+            provider: this._providers[providerId],
         };
     }
 
@@ -222,7 +220,8 @@ export default class PriceTrackBuddyExtension extends Extension {
         this._refreshing = true;
 
         const tasks = [];
-        for (const key of PROVIDER_KEYS) {
+        for (const provider of PROVIDERS) {
+            const key = provider.id;
             const cfg = this._cfg(key);
             if (!cfg.enabled) {
                 this._state[key].loading = false;
@@ -236,9 +235,7 @@ export default class PriceTrackBuddyExtension extends Extension {
             }
             this._state[key].loading = true;
             this._state[key].error = null;
-            const promise = key === 'deepseek'
-                ? cfg.provider.getBalance()
-                : cfg.provider.getCredits();
+            const promise = cfg.provider.read();
             tasks.push({
                 key,
                 promise: promise.then(
@@ -285,29 +282,23 @@ export default class PriceTrackBuddyExtension extends Extension {
         let toppedUpDelta = 0;
         if (cur.hasData()) {
             const prev = {
-                total: cur.lastTotal,
+                headline: cur.lastTotal,
                 usage: cur.lastExtra?.usage ?? 0,
                 purchased: cur.lastExtra?.purchased ?? 0,
             };
-            const m = key === 'deepseek'
-                ? deepseekMovement(prev, reading)
-                : openrouterMovement(prev, reading);
+            const m = movementFor(providerById(key).movement, prev, reading);
             spentDelta = m.spentDelta;
             toppedUpDelta = m.toppedUpDelta;
         }
 
-        const extra = key === 'deepseek'
-            ? { granted: reading.granted, toppedUp: reading.toppedUp }
-            : { usage: reading.usage, purchased: reading.purchased };
         cur.record({
             at: reading.at,
-            total: key === 'deepseek' ? reading.total : reading.remaining,
+            total: reading.headline,
             spentDelta,
             toppedUpDelta,
-            extra,
+            extra: reading.extra ?? null,
         });
         this._state[key].reading = reading;
-        this._readings[key] = reading;
     }
 
     /* -------------------------------------------------------------- display */
@@ -315,9 +306,10 @@ export default class PriceTrackBuddyExtension extends Extension {
     _displayState(key) {
         const ledger = this._ledgers[key];
         const st = this._state[key];
+        const s = providerById(key).settings;
         return {
-            enabled: this._settings.get_boolean(`${key}-enabled`),
-            keySet: !!this._settings.get_string(`${key}-api-key`),
+            enabled: this._settings.get_boolean(s.enabled),
+            keySet: !!this._settings.get_string(s.apiKey),
             loading: st.loading,
             error: st.error,
             reading: st.reading,
@@ -329,14 +321,23 @@ export default class PriceTrackBuddyExtension extends Extension {
         };
     }
 
+    /** Billing-window status for every provider that declares one. */
+    _currentPeaks() {
+        const peaks = {};
+        for (const provider of PROVIDERS) {
+            if (provider.peak)
+                peaks[provider.id] = peakStatus(Date.now(), localTimeZone());
+        }
+        return peaks;
+    }
+
     _render() {
         if (!this._widget)
             return;
-        this._widget.updateDisplays({
-            deepseek: this._displayState('deepseek'),
-            openrouter: this._displayState('openrouter'),
-            peak: peakStatus(Date.now(), localTimeZone()),
-        });
+        const displays = {};
+        for (const provider of PROVIDERS)
+            displays[provider.id] = this._displayState(provider.id);
+        this._widget.updateDisplays(displays, this._currentPeaks());
         this._updateIndicator();
     }
 
@@ -405,10 +406,12 @@ export default class PriceTrackBuddyExtension extends Extension {
         this._indicator.menu.addAction('Open settings…', () => this.openPreferences());
         this._indicator.menu.addAction('Reset widget position', () => this._placeDefault());
         this._indicator.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        this._indDS = new PopupMenu.PopupMenuItem('DeepSeek —');
-        this._indOR = new PopupMenu.PopupMenuItem('OpenRouter —');
-        this._indicator.menu.addMenuItem(this._indDS);
-        this._indicator.menu.addMenuItem(this._indOR);
+        this._indItems = {};
+        for (const provider of PROVIDERS) {
+            const item = new PopupMenu.PopupMenuItem(`${provider.name} —`);
+            this._indItems[provider.id] = item;
+            this._indicator.menu.addMenuItem(item);
+        }
         Main.panel.addToStatusArea('price-track-buddy', this._indicator, 0, 'right');
         this._updateIndicator();
     }
@@ -430,23 +433,26 @@ export default class PriceTrackBuddyExtension extends Extension {
         // Pango markup, so today's spend can carry its own colour.
         const esc = (s) => String(s)
             .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        const mk = (key) => {
-            const name = key === 'deepseek' ? 'DeepSeek' : 'OpenRouter';
-            const st = this._state[key];
-            if (st.error)
-                return `${name}  ✕ ${esc(st.error.code ?? 'error')}`;
-            if (!st.reading)
-                return `${name}  —`;
-
-            const currency = st.reading.currency ?? (key === 'deepseek' ? 'CNY' : 'USD');
-            const main = key === 'deepseek' ? st.reading.total : st.reading.remaining;
-            const spent = this._displayState(key).spentToday;
-            const colour = spent > 0 ? '#ffcc66' : '#9aa1ad';
-            const spentPart =
-                `   <span foreground="${colour}">today ${esc(fmtMoney(spent, currency))}</span>`;
-            return `${name}  ${esc(fmtMoney(main, currency))}${spentPart}`;
-        };
-        this._indDS.label.clutter_text.set_markup(mk('deepseek'));
-        this._indOR.label.clutter_text.set_markup(mk('openrouter'));
+        for (const provider of PROVIDERS) {
+            const item = this._indItems[provider.id];
+            if (!item)
+                continue;
+            const st = this._state[provider.id];
+            const name = provider.name;
+            let markup;
+            if (st.error) {
+                markup = `${name}  ✕ ${esc(st.error.code ?? 'error')}`;
+            } else if (!st.reading) {
+                markup = `${name}  —`;
+            } else {
+                const currency = st.reading.currency ?? provider.defaultCurrency ?? 'USD';
+                const spent = this._displayState(provider.id).spentToday;
+                const colour = spent > 0 ? '#ffcc66' : '#9aa1ad';
+                const spentPart =
+                    `   <span foreground="${colour}">today ${esc(fmtMoney(spent, currency))}</span>`;
+                markup = `${name}  ${esc(fmtMoney(st.reading.headline, currency))}${spentPart}`;
+            }
+            item.label.clutter_text.set_markup(markup);
+        }
     }
 }

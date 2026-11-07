@@ -8,6 +8,8 @@ import Gtk from 'gi://Gtk';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
+import { PROVIDERS } from './lib/registry.js';
+
 /*
  * The extension-preferences base class lives at different resource URLs
  * depending on the Shell version:
@@ -51,56 +53,41 @@ export default class PriceTrackBuddyPreferences extends ExtensionPreferences {
             icon_name: 'system-run-symbolic',
         });
 
-        // DeepSeek.
-        const dsGroup = new Adw.PreferencesGroup({
-            title: 'DeepSeek',
-            description:
-                'Balance from the /user/balance endpoint. Leave Base URL empty for ' +
-                'https://api.deepseek.com. Preferred currency picks one of the entries ' +
-                'the API reports (empty = first entry).',
-        });
-        const dsEnabled = new Adw.SwitchRow({ title: 'Track DeepSeek' });
-        settings.bind('deepseek-enabled', dsEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
-        dsGroup.add(dsEnabled);
+        for (const provider of PROVIDERS) {
+            const group = new Adw.PreferencesGroup({
+                title: provider.name,
+                description: provider.description,
+            });
 
-        const dsKey = new Adw.PasswordEntryRow({ title: 'API key' });
-        dsKey.set_show_apply_button(true);
-        settings.bind('deepseek-api-key', dsKey, 'text', Gio.SettingsBindFlags.DEFAULT);
-        dsGroup.add(dsKey);
+            const enabled = new Adw.SwitchRow({ title: `Track ${provider.name}` });
+            settings.bind(provider.settings.enabled, enabled, 'active',
+                Gio.SettingsBindFlags.DEFAULT);
+            group.add(enabled);
 
-        // Adw.EntryRow has no placeholder-text API (only Adw.Sidebar does), so the
-        // defaults live in the group description above instead.
-        const dsUrl = new Adw.EntryRow({ title: 'Base URL' });
-        settings.bind('deepseek-base-url', dsUrl, 'text', Gio.SettingsBindFlags.DEFAULT);
-        dsGroup.add(dsUrl);
+            const apiKey = new Adw.PasswordEntryRow({ title: 'API key' });
+            apiKey.set_show_apply_button(true);
+            settings.bind(provider.settings.apiKey, apiKey, 'text',
+                Gio.SettingsBindFlags.DEFAULT);
+            group.add(apiKey);
 
-        const dsCurrency = new Adw.EntryRow({ title: 'Preferred currency' });
-        settings.bind('deepseek-currency', dsCurrency, 'text', Gio.SettingsBindFlags.DEFAULT);
-        dsGroup.add(dsCurrency);
+            if (provider.settings.baseUrl) {
+                // Adw.EntryRow has no placeholder-text API (only Adw.Sidebar
+                // does), so the defaults live in the group description.
+                const baseUrl = new Adw.EntryRow({ title: 'Base URL' });
+                settings.bind(provider.settings.baseUrl, baseUrl, 'text',
+                    Gio.SettingsBindFlags.DEFAULT);
+                group.add(baseUrl);
+            }
 
-        // OpenRouter.
-        const orGroup = new Adw.PreferencesGroup({
-            title: 'OpenRouter',
-            description:
-                'Credits from the /credits endpoint. Requires a management key — a ' +
-                'publishable key will be rejected (HTTP 401). Leave Base URL empty for ' +
-                'https://openrouter.ai/api/v1.',
-        });
-        const orEnabled = new Adw.SwitchRow({ title: 'Track OpenRouter' });
-        settings.bind('openrouter-enabled', orEnabled, 'active', Gio.SettingsBindFlags.DEFAULT);
-        orGroup.add(orEnabled);
+            if (provider.settings.currency) {
+                const currency = new Adw.EntryRow({ title: 'Preferred currency' });
+                settings.bind(provider.settings.currency, currency, 'text',
+                    Gio.SettingsBindFlags.DEFAULT);
+                group.add(currency);
+            }
 
-        const orKey = new Adw.PasswordEntryRow({ title: 'API key' });
-        orKey.set_show_apply_button(true);
-        settings.bind('openrouter-api-key', orKey, 'text', Gio.SettingsBindFlags.DEFAULT);
-        orGroup.add(orKey);
-
-        const orUrl = new Adw.EntryRow({ title: 'Base URL' });
-        settings.bind('openrouter-base-url', orUrl, 'text', Gio.SettingsBindFlags.DEFAULT);
-        orGroup.add(orUrl);
-
-        providersPage.add(dsGroup);
-        providersPage.add(orGroup);
+            providersPage.add(group);
+        }
 
         /* ------------------------- General page --------------------------- */
 
@@ -111,7 +98,7 @@ export default class PriceTrackBuddyPreferences extends ExtensionPreferences {
 
         const pollGroup = new Adw.PreferencesGroup({
             title: 'Polling',
-            description: 'How often the panel re-reads both providers.',
+            description: 'How often the panel re-reads all enabled providers.',
         });
         const refreshSpin = Adw.SpinRow.new(
             new Gtk.Adjustment({ lower: 20, upper: 3600, step_increment: 10, page_increment: 60 }),

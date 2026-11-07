@@ -185,6 +185,7 @@ the widget's gear icon or the indicator menu. There are two pages.
 extension.js        shell entry point: settings → providers → ledgers → widget + indicator + polling
 prefs.js            libadwaita preferences window (where keys are plugged in)
 lib/providers.js    DeepSeek /user/balance + OpenRouter /credits clients (libsoup3)
+lib/registry.js     provider descriptors: identity, settings keys, movement mode, peak
 lib/ledger.js       JSON ledger with daily buckets + capped point history
 lib/peak.js         DeepSeek peak/off-peak window math (ported from DeepSeek Harness)
 lib/widget.js       floating glass panel UI (drag, collapse, sparklines)
@@ -198,7 +199,7 @@ test/run-tests.mjs  gjs unit + integration tests:  gjs -m test/run-tests.mjs
 
 ```bash
 node --check extension.js prefs.js lib/*.js   # syntax
-gjs -m test/run-tests.mjs                     # 57 unit/integration tests
+gjs -m test/run-tests.mjs                     # 66 unit/integration tests
 ```
 
 ## Credits

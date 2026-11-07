@@ -61,7 +61,7 @@ install for a change that only a unit test can reach.
 
 ```bash
 node --check extension.js prefs.js lib/*.js   # syntax; parses as ESM
-gjs -m test/run-tests.mjs                     # 57 unit/integration tests
+gjs -m test/run-tests.mjs                     # 66 unit/integration tests
 ```
 
 Reading the test result:
@@ -108,7 +108,7 @@ type(scope): summary
 What changed and why. Reference the concrete symptom when fixing a bug —
 e.g. Clutter.TextEllipsizeMode not introspected in this mutter.
 
-Verified: node --check extension.js prefs.js lib/*.js; gjs -m test/run-tests.mjs (57 passed)
+Verified: node --check extension.js prefs.js lib/*.js; gjs -m test/run-tests.mjs (66 passed)
 ```
 
 - Types in use: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`.
@@ -173,6 +173,10 @@ credentials.
 - `lib/peak.js` was ported from DeepSeek Harness. Keep the billing-window
   semantics (Mon–Fri 09–12 and 14–18 Beijing, 0.5× otherwise) in sync if that
   source changes.
+- **Providers are data.** `lib/registry.js` owns the provider list: identity,
+  settings keys, movement mode, optional peak window, spark colours. Extension,
+  widget and prefs iterate it. Adding a built-in is one descriptor plus its
+  schema keys — do not reintroduce `deepseek`/`openrouter` branches elsewhere.
 - **Secrets never enter the repo.** API keys live in dconf/GSettings (plaintext
   on disk, which the README warns about). The spend ledger lives in
   `~/.local/share/price-track-buddy/`. Neither belongs in a commit.
