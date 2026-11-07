@@ -39,6 +39,9 @@ a follow-up chore.
 - **Only touch what changed.** A one-line feature gets a one-line README edit.
   If the change is invisible to users (internal refactor, tests, build glue),
   the README needs no edit.
+- **Voice.** Write the README prose in the `my-voice` product-note register
+  (quiet, first person, varied sentence length), then run the `humanizer` pass.
+  Tables, commands, paths, and link targets are data; leave them alone.
 - **Screenshots are README content too.** If a change makes `screenshot01.png`
   or `screenshot02.png` misleading, say so; regenerating them needs a live
   Shell, so it is usually Tarlow's.
