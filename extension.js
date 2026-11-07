@@ -132,14 +132,17 @@ export default class PriceTrackBuddyExtension extends Extension {
         }
 
         // Timers. GLib 2.88 annotates these as (priority, interval, callback).
-        // The per-second pass only feeds the peak countdown and the "updated
-        // Ns ago" line, both of which live in the expanded body. Skip it while
-        // the widget is hidden or collapsed — no on-screen text changes.
+        // The per-second pass feeds the peak countdown, the "updated Ns ago"
+        // line and the panel's peak/off-peak outline. While collapsed only the
+        // outline is on screen, so update just that instead of re-rendering
+        // the hidden cards.
         this._tickId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
             if (!this._widget) return GLib.SOURCE_CONTINUE;
-            if (!this._widget.actor.visible || this._settings.get_boolean('collapsed'))
-                return GLib.SOURCE_CONTINUE;
-            this._render();
+            if (!this._widget.actor.visible) return GLib.SOURCE_CONTINUE;
+            if (this._settings.get_boolean('collapsed'))
+                this._widget.updatePeak(peakStatus(Date.now(), localTimeZone()));
+            else
+                this._render();
             return GLib.SOURCE_CONTINUE;
         });
         this._reschedule();

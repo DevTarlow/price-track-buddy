@@ -22,7 +22,10 @@ GNOME 50 / gjs 1.88 (Ubuntu 24.x, Wayland).
   collapse/expand, open settings and hide — and the title area is the drag
   handle. Collapsing it (the chevron) keeps it on screen in a minimal mode: one
   compact row per provider with its `DS`/`OR` tag, current balance and today's
-  spend. Expanded, it shows a card per provider:
+  spend. The panel outline is tinted **green while off-peak** and **orange
+  during peak** hours (the same colours as the billing banner), so the current
+  state is readable at a glance even when collapsed. Expanded, it shows a card
+  per provider:
 
   | DeepSeek card | OpenRouter card |
   |---|---|
@@ -161,7 +164,8 @@ indicator menu). Two pages:
   totals stay comparable, and the ledger re-seeds.
 - Peak pricing: DeepSeek bills **1× price Mon–Fri 09–12 & 14–18 Beijing time**,
   **0.5× otherwise** (UTC windows 01–04 and 06–10 on weekdays; weekends all
-  off-peak). The banner shows the current multiplier and a live countdown.
+  off-peak). The banner shows the current multiplier and a live countdown; the
+  panel outline carries the same green/orange state colour.
 
 ## Troubleshooting
 

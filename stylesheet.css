@@ -16,6 +16,28 @@
   border-color: rgba(255, 255, 255, 0.22);
 }
 
+/* Billing-state accent: the green/orange used by the peak banner, applied to
+ * the panel outline so peak vs. off-peak reads while the panel is collapsed.
+ * St sizes on the border box, so the wider border does not change the panel's
+ * outer width (and St supports only one box-shadow, so no glow ring here). */
+.ptb-root.ptb-mode-off {
+  border-width: 2px;
+  border-color: rgba(51, 209, 122, 0.85);
+}
+
+.ptb-root.ptb-mode-peak {
+  border-width: 2px;
+  border-color: rgba(255, 145, 64, 0.85);
+}
+
+.ptb-root.ptb-mode-off:hover {
+  border-color: #33d17a;
+}
+
+.ptb-root.ptb-mode-peak:hover {
+  border-color: #ff9140;
+}
+
 /* ---- header ---- */
 .ptb-header {
   padding: 7px 10px 4px 12px;
