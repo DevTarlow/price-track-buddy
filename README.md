@@ -21,11 +21,12 @@ anywhere. The header holds the controls: refresh now, collapse, settings, hide.
 The title area is the drag handle. Two status dots sit beside the title. Hover
 one to see the provider.
 
-Collapse it and it stays on screen in minimal mode: one compact row per provider
-with its `DS`/`OR` tag, the current balance, and today's spend. The outline turns
-green while DeepSeek is off-peak and orange during peak hours, the same colours
-as the billing banner, so you can read the state without expanding it. Expand it
-and you get a card per provider.
+Collapse it and it stays on screen in minimal mode: one compact row per enabled
+provider with its provider badge, the current balance, and today's spend. The
+outline turns green while DeepSeek is off-peak and orange during peak hours, the
+same colours as the billing banner, so you can read the state without expanding
+it. Expand it and you get a card per enabled provider. Turn every provider off
+and the panel says so instead of showing an empty card area.
 
 | DeepSeek card | OpenRouter card |
 |---|---|
@@ -43,8 +44,8 @@ monitor will cover it.
 
 A small `$` indicator in the top panel carries the same numbers. Its menu shows
 or hides the widget, refreshes now, opens settings, resets the widget position,
-and gives you a live one-line balance per provider. You can turn the indicator
-off in settings.
+and gives you a live one-line balance for each enabled provider. You can turn the
+indicator off in settings.
 
 Readings go to a local ledger, so history and "spent today" survive restarts.
 History is capped at 480 points per provider, and older points get averaged
@@ -119,7 +120,8 @@ neither.
 ## Configuration
 
 Open Extensions, then Price Track Buddy, then the gear button. You can also use
-the widget's gear icon or the indicator menu. There are two pages.
+the widget's gear icon or the indicator menu. There are two pages. Turning a
+provider off hides its card, dot and menu line; the ledger is kept.
 
 ### Providers
 

@@ -94,6 +94,16 @@
   spacing: 16px;
 }
 
+.ptb-body-scroll {
+  background-color: transparent;
+}
+
+.ptb-empty {
+  font-size: 11px;
+  color: #9aa1ad;
+  padding: 8px 2px;
+}
+
 .ptb-card {
   background-color: rgba(255, 255, 255, 0.045);
   border-radius: 12px;

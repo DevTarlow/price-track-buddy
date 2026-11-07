@@ -70,6 +70,10 @@ export default class PriceTrackBuddyExtension extends Extension {
             affectsStruts: false,
             trackFullscreen: false,
         });
+        // Populate the labels and cap the body height before the default
+        // placement measures the panel; otherwise a long card list is placed
+        // as if the body were empty.
+        this._render();
         this._widget.actor.set_position(
             this._settings.get_int('position-x'),
             this._settings.get_int('position-y'));
@@ -331,10 +335,12 @@ export default class PriceTrackBuddyExtension extends Extension {
         const name = s.name
             ? (this._settings.get_string(s.name) || provider.name)
             : provider.name;
+        const enabled = this._settings.get_boolean(s.enabled);
         return {
-            enabled: this._settings.get_boolean(s.enabled),
+            enabled,
             keySet: this._keySet(provider),
-            visible: provider.isVisible ? provider.isVisible(this._settings) : true,
+            visible: enabled &&
+                (provider.isVisible ? provider.isVisible(this._settings) : true),
             name,
             loading: st.loading,
             error: st.error,
@@ -347,12 +353,15 @@ export default class PriceTrackBuddyExtension extends Extension {
         };
     }
 
-    /** Billing-window status for every provider that declares one. */
+    /** Billing-window status for every enabled provider that declares one. */
     _currentPeaks() {
         const peaks = {};
         for (const provider of PROVIDERS) {
-            if (provider.peak)
-                peaks[provider.id] = peakStatus(Date.now(), localTimeZone());
+            if (!provider.peak)
+                continue;
+            if (!this._settings.get_boolean(provider.settings.enabled))
+                continue;
+            peaks[provider.id] = peakStatus(Date.now(), localTimeZone());
         }
         return peaks;
     }
