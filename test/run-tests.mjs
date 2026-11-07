@@ -246,6 +246,12 @@ check('providerById returns null for unknown', providerById('nope') === null);
 check('registry factories build readable adapters',
     PROVIDERS.every((p) => typeof p.create({ apiKey: '' }).read === 'function'));
 
+const customSlots = PROVIDERS.filter((p) => p.custom);
+check('three custom slots with distinct settings',
+    customSlots.length === 3 &&
+    new Set(customSlots.flatMap((p) => Object.values(p.settings))).size ===
+        customSlots.reduce((n, p) => n + Object.values(p.settings).length, 0));
+
 /* --------------------------------------------------- provider error paths */
 
 async function expectProviderError(name, promise, code) {

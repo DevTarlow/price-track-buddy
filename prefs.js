@@ -97,8 +97,8 @@ export default class PriceTrackBuddyPreferences extends ExtensionPreferences {
                 group.add(currency);
             }
 
-            if (provider.id === 'custom')
-                this._addCustomRows(group, settings);
+            if (provider.custom)
+                this._addCustomRows(group, settings, provider);
 
             providersPage.add(group);
         }
@@ -195,7 +195,8 @@ export default class PriceTrackBuddyPreferences extends ExtensionPreferences {
         window.add(generalPage);
     }
 
-    _addCustomRows(group, settings) {
+    _addCustomRows(group, settings, descriptor) {
+        const keys = descriptor.settings;
         const modes = ['bearer', 'header', 'none'];
         const authRow = new Adw.ComboRow({
             title: 'Authentication',
@@ -205,16 +206,16 @@ export default class PriceTrackBuddyPreferences extends ExtensionPreferences {
                 'No authentication',
             ]),
         });
-        const current = modes.indexOf(settings.get_string('custom-auth-mode'));
+        const current = modes.indexOf(settings.get_string(keys.authMode));
         authRow.selected = current >= 0 ? current : 0;
         authRow.connect('notify::selected', () => {
-            settings.set_string('custom-auth-mode',
+            settings.set_string(keys.authMode,
                 modes[authRow.selected] ?? 'bearer');
         });
         group.add(authRow);
 
         const headerRow = new Adw.EntryRow({ title: 'Auth header name' });
-        settings.bind('custom-auth-header', headerRow, 'text',
+        settings.bind(keys.authHeader, headerRow, 'text',
             Gio.SettingsBindFlags.DEFAULT);
         group.add(headerRow);
 
@@ -233,14 +234,14 @@ export default class PriceTrackBuddyPreferences extends ExtensionPreferences {
             testButton.sensitive = false;
             testRow.set_subtitle('Fetching…');
             try {
-                const provider = new CustomProvider({
-                    apiKey: settings.get_string('custom-api-key'),
-                    baseUrl: settings.get_string('custom-url'),
-                    authMode: settings.get_string('custom-auth-mode'),
-                    authHeader: settings.get_string('custom-auth-header'),
-                    preferredCurrency: settings.get_string('custom-currency'),
+                const tester = new CustomProvider({
+                    apiKey: settings.get_string(keys.apiKey),
+                    baseUrl: settings.get_string(keys.baseUrl),
+                    authMode: settings.get_string(keys.authMode),
+                    authHeader: settings.get_string(keys.authHeader),
+                    preferredCurrency: settings.get_string(keys.currency),
                 });
-                const reading = await provider.read();
+                const reading = await tester.read();
                 testRow.set_subtitle(
                     `OK. ${fmtMoney(reading.headline, reading.currency)}`);
             } catch (e) {

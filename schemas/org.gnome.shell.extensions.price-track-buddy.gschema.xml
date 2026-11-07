@@ -92,6 +92,78 @@
       <description>Used when the endpoint's JSON omits currency.</description>
     </key>
 
+    <key name="custom2-enabled" type="b">
+      <default>false</default>
+      <summary>Track the second custom endpoint</summary>
+      <description>Show and poll the second user-supplied endpoint.</description>
+    </key>
+    <key name="custom2-name" type="s">
+      <default>''</default>
+      <summary>Second custom endpoint display name</summary>
+      <description>Name shown on the card and in the indicator menu. Empty uses "Custom endpoint 2".</description>
+    </key>
+    <key name="custom2-url" type="s">
+      <default>''</default>
+      <summary>Second custom endpoint URL</summary>
+      <description>Full URL returning JSON with a numeric total (or balance).</description>
+    </key>
+    <key name="custom2-api-key" type="s">
+      <default>''</default>
+      <summary>Second custom endpoint API key</summary>
+      <description>Bearer token or custom-header value. Stored as plaintext in dconf.</description>
+    </key>
+    <key name="custom2-auth-mode" type="s">
+      <default>'bearer'</default>
+      <summary>Second custom endpoint authentication mode</summary>
+      <description>One of bearer, header, none.</description>
+    </key>
+    <key name="custom2-auth-header" type="s">
+      <default>'Authorization'</default>
+      <summary>Second custom endpoint auth header name</summary>
+      <description>Header used when the authentication mode is header.</description>
+    </key>
+    <key name="custom2-currency" type="s">
+      <default>'USD'</default>
+      <summary>Second custom endpoint fallback currency</summary>
+      <description>Used when the endpoint's JSON omits currency.</description>
+    </key>
+
+    <key name="custom3-enabled" type="b">
+      <default>false</default>
+      <summary>Track the third custom endpoint</summary>
+      <description>Show and poll the third user-supplied endpoint.</description>
+    </key>
+    <key name="custom3-name" type="s">
+      <default>''</default>
+      <summary>Third custom endpoint display name</summary>
+      <description>Name shown on the card and in the indicator menu. Empty uses "Custom endpoint 3".</description>
+    </key>
+    <key name="custom3-url" type="s">
+      <default>''</default>
+      <summary>Third custom endpoint URL</summary>
+      <description>Full URL returning JSON with a numeric total (or balance).</description>
+    </key>
+    <key name="custom3-api-key" type="s">
+      <default>''</default>
+      <summary>Third custom endpoint API key</summary>
+      <description>Bearer token or custom-header value. Stored as plaintext in dconf.</description>
+    </key>
+    <key name="custom3-auth-mode" type="s">
+      <default>'bearer'</default>
+      <summary>Third custom endpoint authentication mode</summary>
+      <description>One of bearer, header, none.</description>
+    </key>
+    <key name="custom3-auth-header" type="s">
+      <default>'Authorization'</default>
+      <summary>Third custom endpoint auth header name</summary>
+      <description>Header used when the authentication mode is header.</description>
+    </key>
+    <key name="custom3-currency" type="s">
+      <default>'USD'</default>
+      <summary>Third custom endpoint fallback currency</summary>
+      <description>Used when the endpoint's JSON omits currency.</description>
+    </key>
+
     <key name="refresh-interval" type="i">
       <default>60</default>
       <range min="20" max="3600"/>

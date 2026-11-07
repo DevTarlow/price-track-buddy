@@ -4,7 +4,7 @@
 > your own risk, and report issues as you find them.
 
 A floating panel I built for GNOME Shell 45 to 50. It keeps the balances and
-spend from DeepSeek, OpenRouter, a LiteLLM proxy, or your own endpoint on
+spend from DeepSeek, OpenRouter, a LiteLLM proxy, or your own endpoints on
 screen. And it remembers what you spend over time.
 
 Built by Moss AI Studio · uuid `price-track-buddy@mossaistudio.com`
@@ -61,7 +61,7 @@ The top-panel indicator carries the same live numbers.
 
 - GNOME Shell 45-50 (gjs 1.74 or newer; built against gjs 1.88)
 - Network access to `api.deepseek.com`, `openrouter.ai`, your LiteLLM proxy,
-  and/or whatever endpoint you point the custom provider at
+  and/or whichever endpoints you point the custom slots at
 
 ## Install
 
@@ -137,13 +137,14 @@ provider off hides its card, dot and menu line; the ledger is kept.
 | Track LiteLLM proxy | Enable/disable polling a LiteLLM proxy |
 | LiteLLM base URL | Proxy root; default `http://localhost:4000` |
 | LiteLLM API key | Virtual key with access to `/key/info` |
-| Track custom endpoint | Enable/disable polling a user-supplied endpoint |
-| Custom endpoint name | Optional display name (default "Custom endpoint") |
+| Track custom endpoints | Three slots, each with its own enable switch |
+| Custom endpoint name | Optional display name per slot (default "Custom endpoint N") |
 | Custom endpoint URL | Full URL returning the JSON contract below |
 | Custom endpoint API key | Bearer token or custom header; optional when auth is None |
 | Custom endpoint auth | Bearer token, custom header, or none |
 | Custom endpoint header | Header name used for the custom-header mode |
 | Custom endpoint currency | Fallback when the JSON omits `currency` |
+
 > [!WARNING]
 > GSettings/dconf stores keys in plaintext on disk. Use a dedicated key, or a
 > restricted/proxy endpoint as Base URL, if that bothers you.
@@ -157,10 +158,10 @@ when it is not. Spend comes from the change between readings.
 OneAPI and NewAPI expose a different response shape and a deployment-specific
 quota unit, so use the custom endpoint with a small proxy for those.
 
-### Custom endpoint
+### Custom endpoints
 
-Point it at one URL. The endpoint returns JSON with a numeric total and an
-optional currency:
+There are three custom slots. Each points at one URL and returns JSON with a
+numeric total and an optional currency:
 
 ```json
 { "currency": "USD", "total": 12.34 }
@@ -168,8 +169,8 @@ optional currency:
 
 `balance` works in place of `total`. The URL is the full endpoint, not a base
 URL. Authentication can be a Bearer token (the default), a single custom header,
-or none. Use the Test endpoint button in settings to fetch once and see the
-parsed total before you rely on it.
+or none. Each slot has its own Test endpoint button in settings to fetch once
+and show the parsed total before you rely on it.
 
 If your endpoint only knows cumulative spend, send it as `used` or `spent`
 instead of `total` (or `balance`). The card then shows spend to date, and
@@ -197,8 +198,8 @@ endpoint's shape does not fit the contract, put a small proxy in front of it.
   `gsettings list-recursively org.gnome.shell.extensions.price-track-buddy`)
 - **Ledger history**: one JSON file per provider in
   `~/.local/share/price-track-buddy/` (`deepseek.json`, `openrouter.json`,
-  `litellm.json`, `custom.json`). Delete a file to reset that provider's
-  history.
+  `litellm.json`, `custom.json`, `custom2.json`, `custom3.json`). Delete a file
+  to reset that provider's history.
 
 ## Reading the numbers
 
@@ -246,7 +247,7 @@ test/run-tests.mjs  gjs unit + integration tests:  gjs -m test/run-tests.mjs
 
 ```bash
 node --check extension.js prefs.js lib/*.js   # syntax
-gjs -m test/run-tests.mjs                     # 80 unit/integration tests
+gjs -m test/run-tests.mjs                     # 83 unit/integration tests
 ```
 
 ## Credits
