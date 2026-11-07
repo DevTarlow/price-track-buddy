@@ -31,9 +31,11 @@ import { Ledger } from '../lib/ledger.js';
 import {
     DeepSeekProvider,
     OpenRouterProvider,
+    CustomProvider,
     ProviderError,
     movementFor,
     parseAmount,
+    parseCustomReading,
 } from '../lib/providers.js';
 import { PROVIDERS, providerById } from '../lib/registry.js';
 
@@ -176,6 +178,27 @@ check('parseAmount numeric string', parseAmount('12.34') === 12.34);
 check('parseAmount number', parseAmount(7) === 7);
 check('parseAmount junk is NaN', Number.isNaN(parseAmount('nope')));
 
+const customEur = parseCustomReading('{"currency":"EUR","total":"12.34"}');
+check('custom reading parses total string',
+    customEur.headline === 12.34 && customEur.currency === 'EUR');
+const customFallback = parseCustomReading('{"balance":7}', 'CAD');
+check('custom reading accepts balance and fallback currency',
+    customFallback.headline === 7 && customFallback.currency === 'CAD');
+try {
+    parseCustomReading('{"note":"no total"}');
+    check('custom reading rejects a missing total', false, 'resolved instead of throwing');
+} catch (e) {
+    check('custom reading rejects a missing total',
+        e instanceof ProviderError && e.code === 'malformed');
+}
+try {
+    parseCustomReading('not json');
+    check('custom reading rejects invalid JSON', false, 'resolved instead of throwing');
+} catch (e) {
+    check('custom reading rejects invalid JSON',
+        e instanceof ProviderError && e.code === 'malformed');
+}
+
 check('registry ids are unique',
     new Set(PROVIDERS.map((p) => p.id)).size === PROVIDERS.length);
 for (const provider of PROVIDERS) {
@@ -216,6 +239,9 @@ await expectProviderError('DeepSeek no-key', new DeepSeekProvider({ apiKey: '' }
 await expectProviderError('OpenRouter no-key', new OpenRouterProvider({ apiKey: '' }).read(), 'no-key');
 await expectProviderError('DeepSeek bogus key', new DeepSeekProvider({ apiKey: 'sk-ptb-bogus-test' }).read(), 'unauthorized');
 await expectProviderError('OpenRouter bogus key', new OpenRouterProvider({ apiKey: 'sk-or-v1-ptb-bogus-test' }).read(), 'unauthorized');
+await expectProviderError('Custom no URL', new CustomProvider({}).read(), 'no-url');
+await expectProviderError('Custom no key',
+    new CustomProvider({ baseUrl: 'https://example.invalid/balance' }).read(), 'no-key');
 
 /* ------------------------------------------------------------------ summary */
 

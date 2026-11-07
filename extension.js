@@ -120,8 +120,13 @@ export default class PriceTrackBuddyExtension extends Extension {
             for (const key of Object.values(provider.settings)) {
                 if (!key)
                     continue;
-                this._signalIds.push(this._settings.connect(`changed::${key}`,
-                    () => this._onProviderSettingsChanged(provider.id)));
+                const isName = key === provider.settings.name;
+                this._signalIds.push(this._settings.connect(`changed::${key}`, () => {
+                    if (isName)
+                        this._render();
+                    else
+                        this._onProviderSettingsChanged(provider.id);
+                }));
             }
         }
 
@@ -184,6 +189,12 @@ export default class PriceTrackBuddyExtension extends Extension {
                 preferredCurrency: s.currency
                     ? this._settings.get_string(s.currency)
                     : '',
+                authMode: s.authMode
+                    ? this._settings.get_string(s.authMode)
+                    : undefined,
+                authHeader: s.authHeader
+                    ? this._settings.get_string(s.authHeader)
+                    : undefined,
             });
         }
     }
@@ -203,11 +214,19 @@ export default class PriceTrackBuddyExtension extends Extension {
         this._refreshNow();
     }
 
+    /** Whether this provider has everything it needs to be polled. */
+    _keySet(provider) {
+        const requiresKey = typeof provider.requiresKey === 'function'
+            ? provider.requiresKey(this._settings)
+            : provider.requiresKey !== false;
+        return !requiresKey || !!this._settings.get_string(provider.settings.apiKey);
+    }
+
     _cfg(providerId) {
-        const s = providerById(providerId).settings;
+        const provider = providerById(providerId);
         return {
-            enabled: this._settings.get_boolean(s.enabled),
-            keySet: !!this._settings.get_string(s.apiKey),
+            enabled: this._settings.get_boolean(provider.settings.enabled),
+            keySet: this._keySet(provider),
             provider: this._providers[providerId],
         };
     }
@@ -306,10 +325,16 @@ export default class PriceTrackBuddyExtension extends Extension {
     _displayState(key) {
         const ledger = this._ledgers[key];
         const st = this._state[key];
-        const s = providerById(key).settings;
+        const provider = providerById(key);
+        const s = provider.settings;
+        const name = s.name
+            ? (this._settings.get_string(s.name) || provider.name)
+            : provider.name;
         return {
             enabled: this._settings.get_boolean(s.enabled),
-            keySet: !!this._settings.get_string(s.apiKey),
+            keySet: this._keySet(provider),
+            visible: provider.isVisible ? provider.isVisible(this._settings) : true,
+            name,
             loading: st.loading,
             error: st.error,
             reading: st.reading,
@@ -437,20 +462,20 @@ export default class PriceTrackBuddyExtension extends Extension {
             const item = this._indItems[provider.id];
             if (!item)
                 continue;
-            const st = this._state[provider.id];
-            const name = provider.name;
+            const state = this._displayState(provider.id);
+            item.visible = state.visible !== false;
             let markup;
-            if (st.error) {
-                markup = `${name}  ✕ ${esc(st.error.code ?? 'error')}`;
-            } else if (!st.reading) {
-                markup = `${name}  —`;
+            if (state.error) {
+                markup = `${state.name}  ✕ ${esc(state.error.code ?? 'error')}`;
+            } else if (!state.reading) {
+                markup = `${state.name}  —`;
             } else {
-                const currency = st.reading.currency ?? provider.defaultCurrency ?? 'USD';
-                const spent = this._displayState(provider.id).spentToday;
+                const currency = state.reading.currency ?? provider.defaultCurrency ?? 'USD';
+                const spent = state.spentToday;
                 const colour = spent > 0 ? '#ffcc66' : '#9aa1ad';
                 const spentPart =
                     `   <span foreground="${colour}">today ${esc(fmtMoney(spent, currency))}</span>`;
-                markup = `${name}  ${esc(fmtMoney(st.reading.headline, currency))}${spentPart}`;
+                markup = `${state.name}  ${esc(fmtMoney(state.reading.headline, currency))}${spentPart}`;
             }
             item.label.clutter_text.set_markup(markup);
         }

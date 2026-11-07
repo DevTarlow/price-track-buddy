@@ -54,14 +54,14 @@ install for a change that only a unit test can reach.
 | Change touches | Run before committing |
 |---|---|
 | any `.js` file | `node --check extension.js prefs.js lib/*.js` |
-| logic in `lib/` (`peak`, `format`, `ledger`, `providers`) | `gjs -m test/run-tests.mjs` |
+| logic in `lib/` (`peak`, `format`, `ledger`, `providers`, `registry`) | `gjs -m test/run-tests.mjs` |
 | `extension.js`, `prefs.js`, `lib/widget.js` (UI, polling, indicator) | the unit suite **and** a live install — see Live Shell checks |
 | `schemas/*.gschema.xml` | re-run `./install.sh` so `gschemas.compiled` is regenerated, and commit both |
 | `README.md` only | none — but keep it true |
 
 ```bash
 node --check extension.js prefs.js lib/*.js   # syntax; parses as ESM
-gjs -m test/run-tests.mjs                     # 66 unit/integration tests
+gjs -m test/run-tests.mjs                     # 73 unit/integration tests
 ```
 
 Reading the test result:
@@ -108,12 +108,12 @@ type(scope): summary
 What changed and why. Reference the concrete symptom when fixing a bug —
 e.g. Clutter.TextEllipsizeMode not introspected in this mutter.
 
-Verified: node --check extension.js prefs.js lib/*.js; gjs -m test/run-tests.mjs (66 passed)
+Verified: node --check extension.js prefs.js lib/*.js; gjs -m test/run-tests.mjs (73 passed)
 ```
 
 - Types in use: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`.
 - Scope is optional but useful here: `widget`, `ledger`, `peak`, `prefs`,
-  `providers`, `schema`.
+  `providers`, `registry`, `schema`.
 - The summary states the change, not the process. The body carries what + why.
 - The closing `Verified:` line names the checks **actually run**, not the
   checks that exist.
@@ -160,9 +160,9 @@ wrong, and it has gone wrong here already.
 
 For reference, the credentials are at dconf path
 `/org/gnome/shell/extensions/price-track-buddy/` (`deepseek-api-key`,
-`openrouter-api-key`), stored plaintext in `~/.config/dconf/user`.
-`~/.local/share/price-track-buddy/*.json` is the spend ledger and holds no
-credentials.
+`openrouter-api-key`, `custom-api-key`), stored plaintext in
+`~/.config/dconf/user`. `~/.local/share/price-track-buddy/*.json` is the spend
+ledger and holds no credentials.
 
 ## Repo facts worth not rediscovering
 

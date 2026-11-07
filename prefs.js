@@ -1,6 +1,6 @@
 /**
- * Preferences dialog for Price Track Buddy — the place where the user plugs
- * in their DeepSeek / OpenRouter API keys.
+ * Preferences dialog for Price Track Buddy — where provider credentials and
+ * the optional custom endpoint are configured.
  */
 
 import Adw from 'gi://Adw';
@@ -9,6 +9,8 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
 import { PROVIDERS } from './lib/registry.js';
+import { CustomProvider } from './lib/providers.js';
+import { fmtMoney } from './lib/format.js';
 
 /*
  * The extension-preferences base class lives at different resource URLs
@@ -64,6 +66,13 @@ export default class PriceTrackBuddyPreferences extends ExtensionPreferences {
                 Gio.SettingsBindFlags.DEFAULT);
             group.add(enabled);
 
+            if (provider.settings.name) {
+                const displayName = new Adw.EntryRow({ title: 'Display name' });
+                settings.bind(provider.settings.name, displayName, 'text',
+                    Gio.SettingsBindFlags.DEFAULT);
+                group.add(displayName);
+            }
+
             const apiKey = new Adw.PasswordEntryRow({ title: 'API key' });
             apiKey.set_show_apply_button(true);
             settings.bind(provider.settings.apiKey, apiKey, 'text',
@@ -73,7 +82,9 @@ export default class PriceTrackBuddyPreferences extends ExtensionPreferences {
             if (provider.settings.baseUrl) {
                 // Adw.EntryRow has no placeholder-text API (only Adw.Sidebar
                 // does), so the defaults live in the group description.
-                const baseUrl = new Adw.EntryRow({ title: 'Base URL' });
+                const baseUrl = new Adw.EntryRow({
+                    title: provider.baseUrlLabel ?? 'Base URL',
+                });
                 settings.bind(provider.settings.baseUrl, baseUrl, 'text',
                     Gio.SettingsBindFlags.DEFAULT);
                 group.add(baseUrl);
@@ -85,6 +96,9 @@ export default class PriceTrackBuddyPreferences extends ExtensionPreferences {
                     Gio.SettingsBindFlags.DEFAULT);
                 group.add(currency);
             }
+
+            if (provider.id === 'custom')
+                this._addCustomRows(group, settings);
 
             providersPage.add(group);
         }
@@ -179,5 +193,62 @@ export default class PriceTrackBuddyPreferences extends ExtensionPreferences {
 
         window.add(providersPage);
         window.add(generalPage);
+    }
+
+    _addCustomRows(group, settings) {
+        const modes = ['bearer', 'header', 'none'];
+        const authRow = new Adw.ComboRow({
+            title: 'Authentication',
+            model: Gtk.StringList.new([
+                'Bearer token',
+                'Custom header',
+                'No authentication',
+            ]),
+        });
+        const current = modes.indexOf(settings.get_string('custom-auth-mode'));
+        authRow.selected = current >= 0 ? current : 0;
+        authRow.connect('notify::selected', () => {
+            settings.set_string('custom-auth-mode',
+                modes[authRow.selected] ?? 'bearer');
+        });
+        group.add(authRow);
+
+        const headerRow = new Adw.EntryRow({ title: 'Auth header name' });
+        settings.bind('custom-auth-header', headerRow, 'text',
+            Gio.SettingsBindFlags.DEFAULT);
+        group.add(headerRow);
+
+        const testRow = new Adw.ActionRow({
+            title: 'Test endpoint',
+            subtitle: 'Fetch once and show the parsed total.',
+        });
+        const testButton = new Gtk.Button({
+            label: 'Test',
+            valign: Gtk.Align.CENTER,
+        });
+        testRow.add_suffix(testButton);
+        group.add(testRow);
+
+        testButton.connect('clicked', async () => {
+            testButton.sensitive = false;
+            testRow.set_subtitle('Fetching…');
+            try {
+                const provider = new CustomProvider({
+                    apiKey: settings.get_string('custom-api-key'),
+                    baseUrl: settings.get_string('custom-url'),
+                    authMode: settings.get_string('custom-auth-mode'),
+                    authHeader: settings.get_string('custom-auth-header'),
+                    preferredCurrency: settings.get_string('custom-currency'),
+                });
+                const reading = await provider.read();
+                testRow.set_subtitle(
+                    `OK. ${fmtMoney(reading.headline, reading.currency)}`);
+            } catch (e) {
+                const code = e?.code ? `${e.code}: ` : '';
+                testRow.set_subtitle(`Failed. ${code}${e?.message ?? e}`);
+            } finally {
+                testButton.sensitive = true;
+            }
+        });
     }
 }

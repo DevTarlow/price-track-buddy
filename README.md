@@ -3,8 +3,9 @@
 > **UNDER DEVELOPMENT.** Features may change and bugs will show up. Use it at
 > your own risk, and report issues as you find them.
 
-A floating panel I built for GNOME Shell 45 to 50. It keeps your DeepSeek and
-OpenRouter balances on screen. And it remembers what you spend over time.
+A floating panel I built for GNOME Shell 45 to 50. It keeps the balances from
+DeepSeek, OpenRouter, or your own endpoint on screen. And it remembers what you
+spend over time.
 
 Built by Moss AI Studio · uuid `price-track-buddy@mossaistudio.com`
 
@@ -58,7 +59,8 @@ The top-panel indicator carries the same live numbers.
 ## Requirements
 
 - GNOME Shell 45-50 (gjs 1.74 or newer; built against gjs 1.88)
-- Network access to `api.deepseek.com` and/or `openrouter.ai`
+- Network access to `api.deepseek.com` and/or `openrouter.ai`, plus whatever
+  endpoint you point the custom provider at
 
 ## Install
 
@@ -130,10 +132,35 @@ the widget's gear icon or the indicator menu. There are two pages.
 | Track OpenRouter | Enable/disable polling OpenRouter |
 | OpenRouter API key | Management key (`sk-or-v1-…`). A publishable key will get HTTP 401 |
 | OpenRouter base URL | Optional; default `https://openrouter.ai/api/v1` |
+| Track custom endpoint | Enable/disable polling a user-supplied endpoint |
+| Custom endpoint name | Optional display name (default "Custom endpoint") |
+| Custom endpoint URL | Full URL returning the JSON contract below |
+| Custom endpoint API key | Bearer token or custom header; optional when auth is None |
+| Custom endpoint auth | Bearer token, custom header, or none |
+| Custom endpoint header | Header name used for the custom-header mode |
+| Custom endpoint currency | Fallback when the JSON omits `currency` |
 
 > [!WARNING]
 > GSettings/dconf stores keys in plaintext on disk. Use a dedicated key, or a
 > restricted/proxy endpoint as Base URL, if that bothers you.
+
+### Custom endpoint
+
+Point it at one URL. The endpoint returns JSON with a numeric total and an
+optional currency:
+
+```json
+{ "currency": "USD", "total": 12.34 }
+```
+
+`balance` works in place of `total`. The URL is the full endpoint, not a base
+URL. Authentication can be a Bearer token (the default), a single custom header,
+or none. Use the Test endpoint button in settings to fetch once and see the
+parsed total before you rely on it.
+
+Spend comes from the balance delta, same as DeepSeek, so a drop counts as spend
+and a rise as a top-up, and if the endpoint's shape does not fit the contract you
+can put a small proxy in front of it.
 
 ### General
 
@@ -151,8 +178,9 @@ the widget's gear icon or the indicator menu. There are two pages.
 - **Settings**: `dconf` key
   `/org/gnome/shell/extensions/price-track-buddy/` (query with
   `gsettings list-recursively org.gnome.shell.extensions.price-track-buddy`)
-- **Ledger history**: `~/.local/share/price-track-buddy/deepseek.json` and
-  `openrouter.json`. Delete a file to reset that provider's history.
+- **Ledger history**: one JSON file per provider in
+  `~/.local/share/price-track-buddy/` (`deepseek.json`, `openrouter.json`,
+  `custom.json`). Delete a file to reset that provider's history.
 
 ## Reading the numbers
 
@@ -176,6 +204,7 @@ the widget's gear icon or the indicator menu. There are two pages.
 | `API key rejected (401)` | Wrong key/prefixed URL. OpenRouter needs a *management* key. |
 | `Not configured` / `No API key set` | Add the key in Settings. Polling is skipped until then. |
 | `Network error` | Machine offline. It will retry on the next interval. |
+| `malformed` on a custom endpoint | The URL must return JSON with a numeric `total` (or `balance`); use Test endpoint. |
 | Panel doesn't appear after `gnome-extensions enable` | Log out and back in, or restart the Shell. Check `journalctl -f /usr/bin/gnome-shell` for JS errors. |
 | GSettings key missing in prefs | Re-run `./install.sh` (it compiles `schemas/gschemas.compiled`). |
 
@@ -184,7 +213,7 @@ the widget's gear icon or the indicator menu. There are two pages.
 ```
 extension.js        shell entry point: settings → providers → ledgers → widget + indicator + polling
 prefs.js            libadwaita preferences window (where keys are plugged in)
-lib/providers.js    DeepSeek /user/balance + OpenRouter /credits clients (libsoup3)
+lib/providers.js    DeepSeek, OpenRouter and custom-endpoint clients (libsoup3)
 lib/registry.js     provider descriptors: identity, settings keys, movement mode, peak
 lib/ledger.js       JSON ledger with daily buckets + capped point history
 lib/peak.js         DeepSeek peak/off-peak window math (ported from DeepSeek Harness)
@@ -199,7 +228,7 @@ test/run-tests.mjs  gjs unit + integration tests:  gjs -m test/run-tests.mjs
 
 ```bash
 node --check extension.js prefs.js lib/*.js   # syntax
-gjs -m test/run-tests.mjs                     # 66 unit/integration tests
+gjs -m test/run-tests.mjs                     # 73 unit/integration tests
 ```
 
 ## Credits
