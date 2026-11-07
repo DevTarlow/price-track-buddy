@@ -32,12 +32,10 @@ import {
     DeepSeekProvider,
     OpenRouterProvider,
     CustomProvider,
-    LiteLLMProvider,
     ProviderError,
     movementFor,
     parseAmount,
     parseCustomReading,
-    parseLiteLLMReading,
 } from '../lib/providers.js';
 import { PROVIDERS, providerById } from '../lib/registry.js';
 
@@ -197,24 +195,6 @@ const spendOnly = movementFor('usage', { usage: 10 }, { usage: 12.5 });
 check('spend-only movement derives spend without purchased',
     near(spendOnly.spentDelta, 2.5) && spendOnly.toppedUpDelta === 0);
 
-const litellmBudget = parseLiteLLMReading('{"info":{"spend":2.5,"max_budget":10}}');
-check('litellm reading uses remaining budget',
-    litellmBudget.headline === 7.5 &&
-    litellmBudget.headlineLabel === 'remaining' &&
-    litellmBudget.usage === 2.5 &&
-    litellmBudget.movement === 'usage');
-const litellmSpend = parseLiteLLMReading('{"key_info":{"spend":2.5}}');
-check('litellm reading falls back to spend',
-    litellmSpend.headline === 2.5 &&
-    litellmSpend.headlineLabel === 'spent' &&
-    litellmSpend.extra.usage === 2.5);
-try {
-    parseLiteLLMReading('{"info":{}}');
-    check('litellm reading rejects a missing spend', false, 'resolved instead of throwing');
-} catch (e) {
-    check('litellm reading rejects a missing spend',
-        e instanceof ProviderError && e.code === 'malformed');
-}
 try {
     parseCustomReading('{"note":"no total"}');
     check('custom reading rejects a missing total', false, 'resolved instead of throwing');
@@ -279,7 +259,6 @@ await expectProviderError('OpenRouter bogus key', new OpenRouterProvider({ apiKe
 await expectProviderError('Custom no URL', new CustomProvider({}).read(), 'no-url');
 await expectProviderError('Custom no key',
     new CustomProvider({ baseUrl: 'https://example.invalid/balance' }).read(), 'no-key');
-await expectProviderError('LiteLLM no key', new LiteLLMProvider({}).read(), 'no-key');
 
 /* ------------------------------------------------------------------ summary */
 

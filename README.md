@@ -134,9 +134,6 @@ provider off hides its card, dot and menu line; the ledger is kept.
 | Track OpenRouter | Enable/disable polling OpenRouter |
 | OpenRouter API key | Management key (`sk-or-v1-…`). A publishable key will get HTTP 401 |
 | OpenRouter base URL | Optional; default `https://openrouter.ai/api/v1` |
-| Track LiteLLM-compatible | Enable the `/key/info` reader (off by default) |
-| LiteLLM-compatible base URL | Proxy root; default `http://localhost:4000` |
-| LiteLLM-compatible API key | Virtual key with access to `/key/info` |
 | Track custom endpoints | Three slots, each with its own enable switch |
 | Custom endpoint name | Optional display name per slot (default "Custom endpoint N") |
 | Custom endpoint URL | Full URL returning the JSON contract below |
@@ -148,16 +145,6 @@ provider off hides its card, dot and menu line; the ledger is kept.
 > [!WARNING]
 > GSettings/dconf stores keys in plaintext on disk. Use a dedicated key, or a
 > restricted/proxy endpoint as Base URL, if that bothers you.
-
-### LiteLLM-compatible gateways
-
-This reads the `/key/info` shape that LiteLLM and some forks expose. It is
-optional and off by default, and it is not an endorsement of a particular
-proxy. Point Base URL at the proxy root and use a virtual key. It shows the
-key's remaining budget when one is set, or the spend when it is not.
-
-If your gateway does not expose `/key/info`, use a custom slot with a small
-proxy. The gateway matrix below covers the common cases.
 
 ### Custom endpoints
 
@@ -197,7 +184,6 @@ endpoint's shape does not fit the contract, put a small proxy in front of it.
 | Gateway | What it exposes | How it fits here |
 |---|---|---|
 | OpenRouter | Credits and usage | Built in, hosted. The simplest path. |
-| LiteLLM and forks | `/key/info` spend and budget | Built in and off by default. |
 | Bifrost | Prometheus cost metrics | No adapter; use a custom slot with a small proxy. |
 | New API / OneAPI | `/api/user/self` quota | No adapter; the quota unit is per deployment. Use a proxy. |
 | Portkey / Helicone / Cloudflare | Cost analytics | No simple balance; use a custom slot with a proxy. |
@@ -214,8 +200,8 @@ or gateway that reports spend.
   `gsettings list-recursively org.gnome.shell.extensions.price-track-buddy`)
 - **Ledger history**: one JSON file per provider in
   `~/.local/share/price-track-buddy/` (`deepseek.json`, `openrouter.json`,
-  `litellm.json`, `custom.json`, `custom2.json`, `custom3.json`). Delete a file
-  to reset that provider's history.
+  `custom.json`, `custom2.json`, `custom3.json`). Delete a file to reset that
+  provider's history.
 
 ## Reading the numbers
 
@@ -236,7 +222,7 @@ or gateway that reports spend.
 
 | Symptom | Fix |
 |---|---|
-| `API key rejected (401)` | Wrong key or URL. OpenRouter needs a *management* key; LiteLLM-compatible endpoints need a virtual key. |
+| `API key rejected (401)` | Wrong key or URL. OpenRouter needs a *management* key. |
 | `Not configured` / `No API key set` | Add the key in Settings. Polling is skipped until then. |
 | `Network error` | Machine offline. It will retry on the next interval. |
 | `malformed` on a custom endpoint | The URL must return JSON with a numeric `total`/`balance`, or `used`/`spent` for a spend-only endpoint. Use Test endpoint. |
@@ -248,7 +234,7 @@ or gateway that reports spend.
 ```
 extension.js        shell entry point: settings → providers → ledgers → widget + indicator + polling
 prefs.js            libadwaita preferences window (where keys are plugged in)
-lib/providers.js    DeepSeek, OpenRouter, LiteLLM and custom-endpoint clients (libsoup3)
+lib/providers.js    DeepSeek, OpenRouter and custom-endpoint clients (libsoup3)
 lib/registry.js     provider descriptors: identity, settings keys, movement mode, peak
 lib/ledger.js       JSON ledger with daily buckets + capped point history
 lib/peak.js         DeepSeek peak/off-peak window math (ported from DeepSeek Harness)
@@ -263,7 +249,7 @@ test/run-tests.mjs  gjs unit + integration tests:  gjs -m test/run-tests.mjs
 
 ```bash
 node --check extension.js prefs.js lib/*.js   # syntax
-gjs -m test/run-tests.mjs                     # 83 unit/integration tests
+gjs -m test/run-tests.mjs                     # 78 unit/integration tests
 ```
 
 ## Credits

@@ -61,7 +61,7 @@ install for a change that only a unit test can reach.
 
 ```bash
 node --check extension.js prefs.js lib/*.js   # syntax; parses as ESM
-gjs -m test/run-tests.mjs                     # 83 unit/integration tests
+gjs -m test/run-tests.mjs                     # 78 unit/integration tests
 ```
 
 Reading the test result:
@@ -108,7 +108,7 @@ type(scope): summary
 What changed and why. Reference the concrete symptom when fixing a bug —
 e.g. Clutter.TextEllipsizeMode not introspected in this mutter.
 
-Verified: node --check extension.js prefs.js lib/*.js; gjs -m test/run-tests.mjs (83 passed)
+Verified: node --check extension.js prefs.js lib/*.js; gjs -m test/run-tests.mjs (78 passed)
 ```
 
 - Types in use: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`.
@@ -160,10 +160,10 @@ wrong, and it has gone wrong here already.
 
 For reference, the credentials are at dconf path
 `/org/gnome/shell/extensions/price-track-buddy/` (`deepseek-api-key`,
-`openrouter-api-key`, `litellm-api-key`, `custom-api-key`,
-`custom2-api-key`, `custom3-api-key`), stored plaintext in
-`~/.config/dconf/user`. `~/.local/share/price-track-buddy/*.json` is the spend
-ledger and holds no credentials.
+`openrouter-api-key`, `custom-api-key`, `custom2-api-key`,
+`custom3-api-key`), stored plaintext in `~/.config/dconf/user`.
+`~/.local/share/price-track-buddy/*.json` is the spend ledger and holds no
+credentials.
 
 ## Repo facts worth not rediscovering
 
