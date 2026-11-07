@@ -20,6 +20,29 @@ instructions — it does not decide on its own that a change should ship.
    while the next task starts. Do not commit a half-finished change.
 4. **Stop. Do not push.** Tarlow pushes, or says "push".
 
+## README upkeep
+
+`README.md` is the user-facing spec — features, install/update, settings,
+caveats, troubleshooting. Keeping it current is part of finishing a change, not
+a follow-up chore.
+
+- **Any user-visible change updates the README in the same commit**: a new or
+  reworked control, a changed default, a new install or reload step, a new
+  caveat, a fixed symptom in Troubleshooting. The gate runs one way — a
+  README-only edit needs no tests, but a green test run does not excuse a stale
+  README.
+- **Weave, don't rewrite.** Edit the sentence, table row or bullet that already
+  covers the topic instead of appending a new section, and match the existing
+  voice. Leave unrelated prose alone.
+- **Document the build, not the intent.** No aspirational features and no
+  "coming soon". If the code does not do it, the README does not say it.
+- **Only touch what changed.** A one-line feature gets a one-line README edit.
+  If the change is invisible to users (internal refactor, tests, build glue),
+  the README needs no edit.
+- **Screenshots are README content too.** If a change makes `screenshot01.png`
+  or `screenshot02.png` misleading, say so; regenerating them needs a live
+  Shell, so it is usually Tarlow's.
+
 ## Verification gates
 
 Match the check to the surface. Do not default to the full suite plus a live
