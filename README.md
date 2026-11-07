@@ -17,7 +17,8 @@ GNOME 50 / gjs 1.88 (Ubuntu 24.x, Wayland).
 
 The panel floats over your desktop, bottom right by default, and you can drag it
 anywhere. The header holds the controls: refresh now, collapse, settings, hide.
-The title area is the drag handle.
+The title area is the drag handle. Two status dots sit beside the title. Hover
+one to see the provider.
 
 Collapse it and it stays on screen in minimal mode: one compact row per provider
 with its `DS`/`OR` tag, the current balance, and today's spend. The outline turns

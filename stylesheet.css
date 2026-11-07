@@ -241,3 +241,14 @@
   font-weight: 700;
   padding: 0 4px;
 }
+
+/* ---- status-dot tooltips ---- */
+.ptb-tooltip {
+  background-color: rgba(18, 20, 26, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 7px;
+  padding: 3px 8px;
+  font-size: 10.5px;
+  color: #e8eaf0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
