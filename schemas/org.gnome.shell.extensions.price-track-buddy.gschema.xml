@@ -40,6 +40,22 @@
       <description>Leave empty for https://openrouter.ai/api/v1</description>
     </key>
 
+    <key name="litellm-enabled" type="b">
+      <default>false</default>
+      <summary>Track a LiteLLM proxy</summary>
+      <description>Show and poll a LiteLLM proxy's /key/info endpoint.</description>
+    </key>
+    <key name="litellm-api-key" type="s">
+      <default>''</default>
+      <summary>LiteLLM virtual key</summary>
+      <description>Bearer token for /key/info. Stored as plaintext in dconf.</description>
+    </key>
+    <key name="litellm-base-url" type="s">
+      <default>''</default>
+      <summary>LiteLLM proxy base URL</summary>
+      <description>Leave empty for http://localhost:4000</description>
+    </key>
+
     <key name="custom-enabled" type="b">
       <default>false</default>
       <summary>Track a custom endpoint</summary>

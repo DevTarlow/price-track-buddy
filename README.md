@@ -4,8 +4,8 @@
 > your own risk, and report issues as you find them.
 
 A floating panel I built for GNOME Shell 45 to 50. It keeps the balances and
-spend from DeepSeek, OpenRouter, or your own endpoint on screen. And it
-remembers what you spend over time.
+spend from DeepSeek, OpenRouter, a LiteLLM proxy, or your own endpoint on
+screen. And it remembers what you spend over time.
 
 Built by Moss AI Studio · uuid `price-track-buddy@mossaistudio.com`
 
@@ -59,8 +59,8 @@ The top-panel indicator carries the same live numbers.
 ## Requirements
 
 - GNOME Shell 45-50 (gjs 1.74 or newer; built against gjs 1.88)
-- Network access to `api.deepseek.com` and/or `openrouter.ai`, plus whatever
-  endpoint you point the custom provider at
+- Network access to `api.deepseek.com`, `openrouter.ai`, your LiteLLM proxy,
+  and/or whatever endpoint you point the custom provider at
 
 ## Install
 
@@ -132,6 +132,9 @@ the widget's gear icon or the indicator menu. There are two pages.
 | Track OpenRouter | Enable/disable polling OpenRouter |
 | OpenRouter API key | Management key (`sk-or-v1-…`). A publishable key will get HTTP 401 |
 | OpenRouter base URL | Optional; default `https://openrouter.ai/api/v1` |
+| Track LiteLLM proxy | Enable/disable polling a LiteLLM proxy |
+| LiteLLM base URL | Proxy root; default `http://localhost:4000` |
+| LiteLLM API key | Virtual key with access to `/key/info` |
 | Track custom endpoint | Enable/disable polling a user-supplied endpoint |
 | Custom endpoint name | Optional display name (default "Custom endpoint") |
 | Custom endpoint URL | Full URL returning the JSON contract below |
@@ -142,6 +145,15 @@ the widget's gear icon or the indicator menu. There are two pages.
 > [!WARNING]
 > GSettings/dconf stores keys in plaintext on disk. Use a dedicated key, or a
 > restricted/proxy endpoint as Base URL, if that bothers you.
+
+### LiteLLM proxy
+
+Point it at a LiteLLM proxy root and give it a virtual key. It reads
+`/key/info` and shows the key's remaining budget when one is set, or the spend
+when it is not. Spend comes from the change between readings.
+
+OneAPI and NewAPI expose a different response shape and a deployment-specific
+quota unit, so use the custom endpoint with a small proxy for those.
 
 ### Custom endpoint
 
@@ -183,7 +195,8 @@ endpoint's shape does not fit the contract, put a small proxy in front of it.
   `gsettings list-recursively org.gnome.shell.extensions.price-track-buddy`)
 - **Ledger history**: one JSON file per provider in
   `~/.local/share/price-track-buddy/` (`deepseek.json`, `openrouter.json`,
-  `custom.json`). Delete a file to reset that provider's history.
+  `litellm.json`, `custom.json`). Delete a file to reset that provider's
+  history.
 
 ## Reading the numbers
 
@@ -204,7 +217,7 @@ endpoint's shape does not fit the contract, put a small proxy in front of it.
 
 | Symptom | Fix |
 |---|---|
-| `API key rejected (401)` | Wrong key/prefixed URL. OpenRouter needs a *management* key. |
+| `API key rejected (401)` | Wrong key or URL. OpenRouter needs a *management* key; LiteLLM needs a virtual key. |
 | `Not configured` / `No API key set` | Add the key in Settings. Polling is skipped until then. |
 | `Network error` | Machine offline. It will retry on the next interval. |
 | `malformed` on a custom endpoint | The URL must return JSON with a numeric `total`/`balance`, or `used`/`spent` for a spend-only endpoint. Use Test endpoint. |
@@ -216,7 +229,7 @@ endpoint's shape does not fit the contract, put a small proxy in front of it.
 ```
 extension.js        shell entry point: settings → providers → ledgers → widget + indicator + polling
 prefs.js            libadwaita preferences window (where keys are plugged in)
-lib/providers.js    DeepSeek, OpenRouter and custom-endpoint clients (libsoup3)
+lib/providers.js    DeepSeek, OpenRouter, LiteLLM and custom-endpoint clients (libsoup3)
 lib/registry.js     provider descriptors: identity, settings keys, movement mode, peak
 lib/ledger.js       JSON ledger with daily buckets + capped point history
 lib/peak.js         DeepSeek peak/off-peak window math (ported from DeepSeek Harness)
@@ -231,7 +244,7 @@ test/run-tests.mjs  gjs unit + integration tests:  gjs -m test/run-tests.mjs
 
 ```bash
 node --check extension.js prefs.js lib/*.js   # syntax
-gjs -m test/run-tests.mjs                     # 75 unit/integration tests
+gjs -m test/run-tests.mjs                     # 80 unit/integration tests
 ```
 
 ## Credits
