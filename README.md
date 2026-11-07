@@ -3,9 +3,9 @@
 > **UNDER DEVELOPMENT.** Features may change and bugs will show up. Use it at
 > your own risk, and report issues as you find them.
 
-A floating panel I built for GNOME Shell 45 to 50. It keeps the balances from
-DeepSeek, OpenRouter, or your own endpoint on screen. And it remembers what you
-spend over time.
+A floating panel I built for GNOME Shell 45 to 50. It keeps the balances and
+spend from DeepSeek, OpenRouter, or your own endpoint on screen. And it
+remembers what you spend over time.
 
 Built by Moss AI Studio · uuid `price-track-buddy@mossaistudio.com`
 
@@ -139,7 +139,6 @@ the widget's gear icon or the indicator menu. There are two pages.
 | Custom endpoint auth | Bearer token, custom header, or none |
 | Custom endpoint header | Header name used for the custom-header mode |
 | Custom endpoint currency | Fallback when the JSON omits `currency` |
-
 > [!WARNING]
 > GSettings/dconf stores keys in plaintext on disk. Use a dedicated key, or a
 > restricted/proxy endpoint as Base URL, if that bothers you.
@@ -158,9 +157,13 @@ URL. Authentication can be a Bearer token (the default), a single custom header,
 or none. Use the Test endpoint button in settings to fetch once and see the
 parsed total before you rely on it.
 
-Spend comes from the balance delta, same as DeepSeek, so a drop counts as spend
-and a rise as a top-up, and if the endpoint's shape does not fit the contract you
-can put a small proxy in front of it.
+If your endpoint only knows cumulative spend, send it as `used` or `spent`
+instead of `total` (or `balance`). The card then shows spend to date, and
+today's spend comes from the delta between readings.
+
+When the endpoint reports a balance, spend comes from the balance delta, same
+as DeepSeek, so a drop counts as spend and a rise as a top-up. If the
+endpoint's shape does not fit the contract, put a small proxy in front of it.
 
 ### General
 
@@ -184,8 +187,8 @@ can put a small proxy in front of it.
 
 ## Reading the numbers
 
-- Spend comes from balance deltas, not from invoices. Totals cover only the time
-  since tracking began (the first reading seeds `trackedSince`).
+- Spend comes from the change between readings, not from invoices. Totals cover
+  only the time since tracking began (the first reading seeds `trackedSince`).
 - DeepSeek granted-balance expiry lowers the reported balance without an API
   call, so it looks like spend for that day. The card always shows `granted` and
   `topped-up` separately. If one day looks huge, compare those two before
@@ -204,7 +207,7 @@ can put a small proxy in front of it.
 | `API key rejected (401)` | Wrong key/prefixed URL. OpenRouter needs a *management* key. |
 | `Not configured` / `No API key set` | Add the key in Settings. Polling is skipped until then. |
 | `Network error` | Machine offline. It will retry on the next interval. |
-| `malformed` on a custom endpoint | The URL must return JSON with a numeric `total` (or `balance`); use Test endpoint. |
+| `malformed` on a custom endpoint | The URL must return JSON with a numeric `total`/`balance`, or `used`/`spent` for a spend-only endpoint. Use Test endpoint. |
 | Panel doesn't appear after `gnome-extensions enable` | Log out and back in, or restart the Shell. Check `journalctl -f /usr/bin/gnome-shell` for JS errors. |
 | GSettings key missing in prefs | Re-run `./install.sh` (it compiles `schemas/gschemas.compiled`). |
 
@@ -228,7 +231,7 @@ test/run-tests.mjs  gjs unit + integration tests:  gjs -m test/run-tests.mjs
 
 ```bash
 node --check extension.js prefs.js lib/*.js   # syntax
-gjs -m test/run-tests.mjs                     # 73 unit/integration tests
+gjs -m test/run-tests.mjs                     # 75 unit/integration tests
 ```
 
 ## Credits

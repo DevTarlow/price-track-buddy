@@ -180,10 +180,20 @@ check('parseAmount junk is NaN', Number.isNaN(parseAmount('nope')));
 
 const customEur = parseCustomReading('{"currency":"EUR","total":"12.34"}');
 check('custom reading parses total string',
-    customEur.headline === 12.34 && customEur.currency === 'EUR');
+    customEur.headline === 12.34 && customEur.currency === 'EUR' &&
+    customEur.headlineLabel === 'balance');
 const customFallback = parseCustomReading('{"balance":7}', 'CAD');
 check('custom reading accepts balance and fallback currency',
     customFallback.headline === 7 && customFallback.currency === 'CAD');
+const customSpent = parseCustomReading('{"currency":"USD","used":45.67}');
+check('custom spend reading uses usage movement',
+    customSpent.headline === 45.67 &&
+    customSpent.movement === 'usage' &&
+    customSpent.headlineLabel === 'spent' &&
+    customSpent.extra.usage === 45.67);
+const spendOnly = movementFor('usage', { usage: 10 }, { usage: 12.5 });
+check('spend-only movement derives spend without purchased',
+    near(spendOnly.spentDelta, 2.5) && spendOnly.toppedUpDelta === 0);
 try {
     parseCustomReading('{"note":"no total"}');
     check('custom reading rejects a missing total', false, 'resolved instead of throwing');

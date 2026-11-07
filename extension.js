@@ -305,7 +305,8 @@ export default class PriceTrackBuddyExtension extends Extension {
                 usage: cur.lastExtra?.usage ?? 0,
                 purchased: cur.lastExtra?.purchased ?? 0,
             };
-            const m = movementFor(providerById(key).movement, prev, reading);
+            const m = movementFor(reading.movement ?? providerById(key).movement,
+                prev, reading);
             spentDelta = m.spentDelta;
             toppedUpDelta = m.toppedUpDelta;
         }
@@ -475,7 +476,10 @@ export default class PriceTrackBuddyExtension extends Extension {
                 const colour = spent > 0 ? '#ffcc66' : '#9aa1ad';
                 const spentPart =
                     `   <span foreground="${colour}">today ${esc(fmtMoney(spent, currency))}</span>`;
-                markup = `${state.name}  ${esc(fmtMoney(state.reading.headline, currency))}${spentPart}`;
+                const label = state.reading.headlineLabel
+                    ? `${esc(state.reading.headlineLabel)} `
+                    : '';
+                markup = `${state.name}  ${label}${esc(fmtMoney(state.reading.headline, currency))}${spentPart}`;
             }
             item.label.clutter_text.set_markup(markup);
         }
