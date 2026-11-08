@@ -49,6 +49,11 @@
   background-color: rgba(255, 255, 255, 0.04);
 }
 
+/* spacing is a CSS property: StBoxLayout has no GObject `spacing` property. */
+.ptb-dots {
+  spacing: 4px;
+}
+
 .ptb-title {
   font-weight: 700;
   font-size: 12px;
