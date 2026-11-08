@@ -70,7 +70,7 @@ Clone the repo and check out the latest tagged release.
 ```bash
 git clone https://github.com/DevTarlow/price-track-buddy.git
 cd price-track-buddy
-git checkout v0.1.0          # the latest release tag
+git checkout v0.2.0          # the latest release tag
 ./install.sh                 # → ~/.local/share/gnome-shell/extensions/
 ```
 
@@ -100,7 +100,7 @@ which you need whenever a release adds or changes a setting.
 cd price-track-buddy
 git fetch --tags         # pick up releases tagged since you cloned
 git tag -l               # list them, oldest first
-git checkout v0.1.0      # the release you are moving to
+git checkout v0.2.0      # the release you are moving to
 ./install.sh
 ```
 
