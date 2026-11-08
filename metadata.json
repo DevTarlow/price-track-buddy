@@ -1,7 +1,7 @@
 {
   "uuid": "price-track-buddy@mossaistudio.com",
   "name": "Price Track Buddy",
-  "description": "Floating desktop panel that tracks DeepSeek and OpenRouter balances and usage over time. Plug in your API keys in Settings.",
+  "description": "Floating desktop panel that tracks balances and spend from DeepSeek, OpenRouter, and up to three custom endpoints. Plug in your API keys in Settings.",
   "settings-schema": "org.gnome.shell.extensions.price-track-buddy",
   "shell-version": [
     "45",

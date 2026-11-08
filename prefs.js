@@ -182,11 +182,13 @@ export default class PriceTrackBuddyPreferences extends ExtensionPreferences {
         const aboutGroup = new Adw.PreferencesGroup({
             title: 'About this data',
             description:
-                'Spend is derived from balance deltas between readings, so totals cover ' +
-                'only the time since tracking began. An expiring granted balance lowers ' +
-                'the reported balance without any API call being made and is counted as ' +
-                'spend — compare "granted" with "topped-up" before attributing a large ' +
-                'day to usage. API keys are stored as plaintext in dconf. Ledger files: ' +
+                'Spend comes from the change between readings, so totals cover only ' +
+                'the time since tracking began. A balance endpoint counts a drop as ' +
+                'spend and a rise as a top-up; a usage-based endpoint uses the delta ' +
+                'of its cumulative usage. On DeepSeek, an expiring granted balance ' +
+                'lowers the reported balance without an API call and counts as spend, ' +
+                'so compare "granted" with "topped-up" before blaming usage. API keys ' +
+                'are stored as plaintext in dconf. Ledger files: ' +
                 `${GLib.get_user_data_dir()}/price-track-buddy`,
         });
         generalPage.add(aboutGroup);
